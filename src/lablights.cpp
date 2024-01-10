@@ -1,12 +1,16 @@
 #include <FastLED.h>
 #include <globals.h>
 
+// Here we handle variable creation depending on channels (add more if more channels)
 CRGB leds[NUM_LEDS];
+CRGB leds2[NUM_LEDS2];
+CRGB leds3[NUM_LEDS3];
+CRGB leds4[NUM_LEDS4];
 
 int currentlyLitLedsForward[MAX_COMETS];
 int currentlyLitLedsReverse[MAX_COMETS];
 unsigned long previousMillis = 0;
-const long interval = 30; // Interval in milliseconds (How fast the pulses travel, decreasing this value increases the speeds)
+const long interval = 20; // Interval in milliseconds (How fast the pulses travel, decreasing this value increases the speeds)
 
 CRGB forwardColors[MAX_COMETS]; // Create arrays to store color data for each pulse
 CRGB reverseColors[MAX_COMETS];
@@ -14,7 +18,17 @@ CRGB reverseColors[MAX_COMETS];
 void fadeAll(); // Must be defined up here so it can be called before the actual definition
 
 void initFastLED() {
-  FastLED.addLeds<WS2812, DATA_PIN>(leds, NUM_LEDS); // Must be replicated for each strip (or so I assume)
+  FastLED.addLeds<WS2812, DATA_PIN1>(leds, NUM_LEDS);
+  if (NUM_CHANNELS == 2) {
+    FastLED.addLeds<WS2812, DATA_PIN2>(leds2, NUM_LEDS);
+  }else if (NUM_CHANNELS == 3) {
+    FastLED.addLeds<WS2812, DATA_PIN2>(leds2, NUM_LEDS);
+    FastLED.addLeds<WS2812, DATA_PIN3>(leds3, NUM_LEDS);
+  }else if (NUM_CHANNELS == 4) {
+    FastLED.addLeds<WS2812, DATA_PIN2>(leds2, NUM_LEDS);
+    FastLED.addLeds<WS2812, DATA_PIN3>(leds3, NUM_LEDS);
+    FastLED.addLeds<WS2812, DATA_PIN4>(leds4, NUM_LEDS);
+  }
   FastLED.setBrightness(BRIGHTNESS);
 }
 
@@ -66,7 +80,7 @@ void fadeAll() {
   }
 }
 
-void forwardEvent(CRGB color) { // This can be called to start a new pulse originating from the beginning of the strip, with the desired color
+void forwardEvent(CRGB color, int strip) { // This can be called to start a new pulse originating from the beginning of the strip, with the desired color
   // Find the first available position in currentlyLitLedsForward and set it to 0
   for (int i = 0; i < MAX_COMETS; i++) {
     // Find the first available comet that's ready to be shot.
@@ -79,7 +93,7 @@ void forwardEvent(CRGB color) { // This can be called to start a new pulse origi
   }
 }
 
-void reverseEvent(CRGB color) { // This is the exact same as forwardEvent() but in reverse.
+void reverseEvent(CRGB color, int strip) { // This is the exact same as forwardEvent() but in reverse.
   // Find the first available position in currentlyLitLedsReverse and set it to NUM_LEDS - 1
   for (int i = 0; i < MAX_COMETS; i++) {
     if (currentlyLitLedsReverse[i] == -1) {

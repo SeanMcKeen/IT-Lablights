@@ -67,7 +67,7 @@ void loop() {
       previousPulseMillis = currentMillis;
       if (pulsesSentReverse < pulsesToSendReverse){ // simple check to make sure we're sending the right amount
         pulsesSentReverse += 1;
-        reverseEvent(reverseColor); // func call to start a new pulse
+        reverseEvent(reverseColor, 1); // func call to start a new pulse
       }
     }
     // same but forward instead of reverse
@@ -76,7 +76,7 @@ void loop() {
       previousPulseMillis2 = currentMillis2;
       if (pulsesSentForward < pulsesToSendForward){
         pulsesSentForward += 1;
-        forwardEvent(forwardColor);
+        forwardEvent(forwardColor, 1);
       }
     }
   }
