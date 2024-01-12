@@ -21,18 +21,18 @@ const long interval = 20; // Interval in milliseconds (How fast the pulses trave
 void fadeAll(); // Must be defined up here so it can be called before the actual definition
 
 void initFastLED() {
-  FastLED.addLeds<WS2812, DATA_PIN1>(leds, 0, NUM_LEDS);
+  FastLED.addLeds<LED_TYPE, DATA_PIN1>(leds, 0, NUM_LEDS);
   if (NUM_CHANNELS == 2) {
-    FastLED.addLeds<WS2812, DATA_PIN2>(leds, LedSplit1, NUM_LEDS2);
+    FastLED.addLeds<LED_TYPE, DATA_PIN2>(leds, LedSplit1, NUM_LEDS2);
 
   }else if (NUM_CHANNELS == 3) {
-    FastLED.addLeds<WS2812, DATA_PIN2>(leds, LedSplit1, NUM_LEDS2);
-    FastLED.addLeds<WS2812, DATA_PIN3>(leds, LedSplit2, NUM_LEDS3);
+    FastLED.addLeds<LED_TYPE, DATA_PIN2>(leds, LedSplit1, NUM_LEDS2);
+    FastLED.addLeds<LED_TYPE, DATA_PIN3>(leds, LedSplit2, NUM_LEDS3);
 
   }else if (NUM_CHANNELS == 4) {
-    FastLED.addLeds<WS2812, DATA_PIN2>(leds, LedSplit1, NUM_LEDS2);
-    FastLED.addLeds<WS2812, DATA_PIN3>(leds, LedSplit2, NUM_LEDS3);
-    FastLED.addLeds<WS2812, DATA_PIN4>(leds, LedSplit3, NUM_LEDS4);
+    FastLED.addLeds<LED_TYPE, DATA_PIN2>(leds, LedSplit1, NUM_LEDS2);
+    FastLED.addLeds<LED_TYPE, DATA_PIN3>(leds, LedSplit2, NUM_LEDS3);
+    FastLED.addLeds<LED_TYPE, DATA_PIN4>(leds, LedSplit3, NUM_LEDS4);
 
   }
   FastLED.setBrightness(BRIGHTNESS);

@@ -36,7 +36,7 @@
     #define NUM_LEDS4        32 
 
     #define LED_TYPE        WS2812B // Almost no clue what this means, the type of leds being used or something
-    #define COLOR_ORDER     RGB
+    #define COLOR_ORDER     RGB // Currently affects nothing
 
     #define ARRAY_1        {1,2,3,4,5,6, 7, 8} // an array of ports you want to be checked for snmp data
     #define NUMOFPORTS1    8 // how many ports you defined above, idk how else to do this
