@@ -17,6 +17,10 @@ unsigned long outPulseInterval = 0;
 unsigned long previousPulseMillis = 0;
 unsigned long previousPulseMillis2 = 0;
 
+unsigned long previousPulseMillis3 = 0;
+unsigned long previousPulseMillis4 = 0;
+unsigned long previousPulseMillis5 = 0;
+
 unsigned long pulsesToSendForward = 0;
 unsigned long pulsesToSendReverse = 0;
 unsigned int pulsesSentForward = 0;
@@ -52,7 +56,7 @@ void loop() {
       int OutAvg = snmpOutLoop(Array1); // snmpOutLoop() can be found in snmp.cpp to see functionality
       printVariableHeader(); // Another func from snmp.cpp, prints debugging data in serial output
       pulsesToSendReverse = calcSNMPPulses(InAvg); // The IN of the switch, we want the comet travelling from the end of the strip, back towards the device.
-      reverseColor = calcPulseColor(InAvg);
+      reverseColor = calcPulseColor2(InAvg);
       inPulseInterval = 10/pulsesToSendReverse * 1000; // We do this to spread the pulses evenly over 10 seconds, if we want to send 3 pulses it will send a pulse every 3333 milliseconds (3.3 seconds)
       pulsesToSendForward = calcSNMPPulses(OutAvg); // The OUT of the switch, we want the comet travelling from the beginning of the strip, away from the device.
       forwardColor = calcPulseColor(OutAvg);
@@ -68,6 +72,9 @@ void loop() {
       if (pulsesSentReverse < pulsesToSendReverse){ // simple check to make sure we're sending the right amount
         pulsesSentReverse += 1;
         reverseEvent(reverseColor, 1); // func call to start a new pulse
+        reverseEvent(reverseColor, 2);
+        reverseEvent(reverseColor, 3);
+        reverseEvent(reverseColor, 4);
       }
     }
     // same but forward instead of reverse
@@ -77,6 +84,9 @@ void loop() {
       if (pulsesSentForward < pulsesToSendForward){
         pulsesSentForward += 1;
         forwardEvent(forwardColor, 1);
+        forwardEvent(forwardColor, 2);
+        forwardEvent(forwardColor, 3);
+        forwardEvent(forwardColor, 4);
       }
     }
   }

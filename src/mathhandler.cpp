@@ -37,3 +37,19 @@ CRGB calcPulseColor(int Avg) { // This is to make a reactive color depending on 
         return CRGB::Red;
     }
 }
+
+CRGB calcPulseColor2(int Avg) { // This is to have similar, but not exactly the same colors
+    if (Avg < 35000) {
+        return CRGB(5420608);
+    }else if (Avg < 80000) {
+        return CRGB(12320767);
+    }else if (Avg < 170000) {
+        return CRGB(7948287);
+    }else if (Avg < 280000) {
+        return CRGB(5649602);
+    }else if (Avg < 420000) {
+        return CRGB(16735930);
+    }else{
+        return CRGB(16736315);
+    }
+}
