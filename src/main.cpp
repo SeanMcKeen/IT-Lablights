@@ -46,6 +46,23 @@ void setup() {
   }
 }
 
+// The "*" symbol tells it to use this variable to point to the one passed to the function, this allows me to update the original variable inside of this function.
+// essentially this can be used as a time check that I wont have to replicate over and over and over
+bool checkTimes(unsigned long *prevMillisToCheck, int IntervalToCheck) {
+  unsigned long currentMillis = millis();
+  if (currentMillis - *prevMillisToCheck >= IntervalToCheck){
+    *prevMillisToCheck = currentMillis;
+    return true;
+  } else return false;
+}
+
+// again, just so I dont have to write it over and over and over...
+bool checkPulses(int pulsesSent, int pulsesBeingSent){
+  if (pulsesSent < pulsesBeingSent){
+    return true;
+  } else return false;
+}
+
 void loop() {
   litArray();
   if (PROJECT_NAME == "Lablights") {
@@ -66,10 +83,9 @@ void loop() {
       pulsesSentReverse = 0;
     }
     // handle sending the pulses every x seconds
-    unsigned long currentMillis = millis(); 
-    if (currentMillis - previousPulseMillis >= inPulseInterval) { // time delay check, this will allow for execution without pausing the entire code
-      previousPulseMillis = currentMillis;
-      if (pulsesSentReverse < pulsesToSendReverse){ // simple check to make sure we're sending the right amount
+    // the "&" symbol establishes that im going to be using it as a pointer (checkTimes() for more info)
+    if (checkTimes(&previousPulseMillis, outPulseInterval)) {
+      if (checkPulses(pulsesSentReverse, pulsesToSendReverse)){ // simple check to make sure we're sending the right amount
         pulsesSentReverse += 1;
         reverseEvent(reverseColor, 1); // func call to start a new pulse
         reverseEvent(reverseColor, 2);
@@ -78,10 +94,8 @@ void loop() {
       }
     }
     // same but forward instead of reverse
-    unsigned long currentMillis2 = millis();
-    if (currentMillis2 - previousPulseMillis2 >= outPulseInterval) {
-      previousPulseMillis2 = currentMillis2;
-      if (pulsesSentForward < pulsesToSendForward){
+    if (checkTimes(&previousPulseMillis2, inPulseInterval)){
+      if (checkPulses(pulsesSentForward, pulsesToSendForward)){
         pulsesSentForward += 1;
         forwardEvent(forwardColor, 1);
         forwardEvent(forwardColor, 2);

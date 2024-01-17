@@ -1,8 +1,9 @@
 #include <FastLED.h>
 #include <globals.h>
 
-// Here we handle variable creation depending on channels (add more if more channels)
-CRGB leds[NUM_LEDS + NUM_LEDS2 + NUM_LEDS3 + NUM_LEDS4];
+// Add the number of channels because if you have 4 channels you need 4 "gaps" or spaces that dont exist
+const int TotalLeds = NUM_LEDS + NUM_LEDS2 + NUM_LEDS3 + NUM_LEDS4 + NUM_CHANNELS;
+CRGB leds[TotalLeds];
 
 int currentlyLitLedsForward[MAX_COMETS];
 int currentlyLitLedsReverse[MAX_COMETS];
@@ -10,10 +11,17 @@ int currentlyLitLedsReverse[MAX_COMETS];
 CRGB forwardColors[MAX_COMETS];
 CRGB reverseColors[MAX_COMETS];
 
-int LedSplit1 = NUM_LEDS;
-int LedSplit2 = LedSplit1 + NUM_LEDS2;
-int LedSplit3 = LedSplit2 + NUM_LEDS3;
-int TotalLeds = LedSplit3 + NUM_LEDS4;
+// The "Splitpoints" as I like to call them, establish a location in leds[] that doesn't exist on our strips, that way we can use these gaps as the endings for each strip
+// EX: when the first strip comet hits LedSplit1 it will reset to the position of -1 (our reset point). Without these gaps the strip would show an unlit LED at the end of the strip.
+int LedSplit1 = NUM_LEDS + 1;
+int LedSplit2 = LedSplit1 + NUM_LEDS2 + 1;
+int LedSplit3 = LedSplit2 + NUM_LEDS3 + 1;
+
+// These start points are based off the splits, this way if you change your strip sizes it'll still work fine.
+int LedStart1 = 0;
+int LedStart2 = LedSplit1+1;
+int LedStart3 = LedSplit2+1;
+int LedStart4 = LedSplit3+1;
 
 unsigned long previousMillis = 0;
 const long interval = 20; // Interval in milliseconds (How fast the pulses travel, decreasing this value increases the speeds)
@@ -21,18 +29,20 @@ const long interval = 20; // Interval in milliseconds (How fast the pulses trave
 void fadeAll(); // Must be defined up here so it can be called before the actual definition
 
 void initFastLED() {
-  FastLED.addLeds<LED_TYPE, DATA_PIN1>(leds, 0, NUM_LEDS);
+  // According to FastLed documentation, we can do this a few ways, with multiple arrays, or with one main array with different offsets
+  // I chose to use the offset method as I believe it will be better for this usage. (and it's easier)
+  FastLED.addLeds<LED_TYPE, DATA_PIN1>(leds, LedStart1, NUM_LEDS);
   if (NUM_CHANNELS == 2) {
-    FastLED.addLeds<LED_TYPE, DATA_PIN2>(leds, LedSplit1, NUM_LEDS2);
+    FastLED.addLeds<LED_TYPE, DATA_PIN2>(leds, LedStart2, NUM_LEDS2);
 
   }else if (NUM_CHANNELS == 3) {
-    FastLED.addLeds<LED_TYPE, DATA_PIN2>(leds, LedSplit1, NUM_LEDS2);
-    FastLED.addLeds<LED_TYPE, DATA_PIN3>(leds, LedSplit2, NUM_LEDS3);
+    FastLED.addLeds<LED_TYPE, DATA_PIN2>(leds, LedStart2, NUM_LEDS2);
+    FastLED.addLeds<LED_TYPE, DATA_PIN3>(leds, LedStart3, NUM_LEDS3);
 
   }else if (NUM_CHANNELS == 4) {
-    FastLED.addLeds<LED_TYPE, DATA_PIN2>(leds, LedSplit1, NUM_LEDS2);
-    FastLED.addLeds<LED_TYPE, DATA_PIN3>(leds, LedSplit2, NUM_LEDS3);
-    FastLED.addLeds<LED_TYPE, DATA_PIN4>(leds, LedSplit3, NUM_LEDS4);
+    FastLED.addLeds<LED_TYPE, DATA_PIN2>(leds, LedStart2, NUM_LEDS2);
+    FastLED.addLeds<LED_TYPE, DATA_PIN3>(leds, LedStart3, NUM_LEDS3);
+    FastLED.addLeds<LED_TYPE, DATA_PIN4>(leds, LedStart4, NUM_LEDS4);
 
   }
   FastLED.setBrightness(BRIGHTNESS);

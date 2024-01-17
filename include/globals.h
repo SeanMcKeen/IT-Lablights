@@ -24,20 +24,20 @@
  // adjust NUM_LEDS according to your strip sizes
 
     #define DATA_PIN1        10
-    #define NUM_LEDS         32 
+    #define NUM_LEDS         31 
 
     #define DATA_PIN2        13
-    #define NUM_LEDS2        32 
+    #define NUM_LEDS2        31 
 
     #define DATA_PIN3        11
-    #define NUM_LEDS3        32 
+    #define NUM_LEDS3        31 
 
     #define DATA_PIN4        12
-    #define NUM_LEDS4        32 
+    #define NUM_LEDS4        31 
 
     #define LED_TYPE        WS2812B // Almost no clue what this means, the type of leds being used or something
     #define COLOR_ORDER     RGB // Currently affects nothing
 
-    #define ARRAY_1        {1,2,3,4,5,6, 7, 8} // an array of ports you want to be checked for snmp data
+    #define ARRAY_1        {1,2,3,4,5,6,7,8} // an array of ports you want to be checked for snmp data
     #define NUMOFPORTS1    8 // how many ports you defined above, idk how else to do this
 #endif
