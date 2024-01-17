@@ -15,7 +15,7 @@
 <b>void printVariableHeader()</b> -- <i>Prints switch name & uptime to serial monitor.</i>
 <b>void printVariableFooter()</b> -- <i>Prints elapsed time between polls and summary of data.</i>
 
-<h2>lablights.h</h2><b>void initFastLED()</b> -- <i>will add your strip to fastled index (required)</i>
+<h2>lablights.h</h2><b>void initFastLED()</b> -- <i>Will add your strip to fastled index (required)</i>
 <b>void litArray()</b> -- <i>Must be called in every iteration of your main loop() function (runs as a frame)</i>
 <b>void forwardEvent(CRGB fColor, int strip)</b> -- <i>Sends a pulse down the strip from index 0.</i>
 <b>void reverseEvent(CRGB rColor, int strip)</b> -- <i>Sends a pulse towards the beginning from the end of the strip.</i>
