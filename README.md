@@ -19,12 +19,15 @@
 <b>void litArray()</b> -- Must be called in every iteration of your main loop() function (runs as a frame)
 <b>void forwardEvent(CRGB fColor, int strip)</b> -- Sends a pulse down the strip from index 0
 <b>void reverseEvent(CRGB rColor, int strip)</b> -- Sends a pulse towards the beginning from the end of the strip
-
-<h2>Other Important Info</h2><b>YOU MUST EDIT YOUR SETTINGS IN globals.h</b>
-<b>Change your WIFI in secrets.h</b>
-<b>Make sure platform.io is building for your device</b>
-<p></p>
-<b>Currently Supported Devices:</b> LilyGo T-Display S3, M5Stick-C
 </pre>
 </div>
+
+<h2>Other Important Info</h2>
+
+- <b>YOU MUST EDIT YOUR SETTINGS IN globals.h</b>
+- <b>Change your WIFI in secrets.h</b>
+- <b>Make sure platform.io is building for your device</b>
+
+<p></p>
+<b>Currently Supported Devices:</b> LilyGo T-Display S3, M5Stick-C
 </html>
