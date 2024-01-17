@@ -9,16 +9,16 @@
 
 <h2>Some Important Functions</h2>
 <div class="box">
-  <pre><h2>snmp.h</h2><b>void SNMPsetup(int Array[])</b> -- Sets up a list of ports that you will be pulling data from
-<b>int snmpInLoop(int Array[])</b> -- Returns the Average difference in data since the last poll coming IN to the switch.
-<b>int snmpOutLoop(int Array[])</b> -- Returns the Average difference in data since the last poll coming OUT of the switch.
-<b>void printVariableHeader()</b> -- Prints switch name & uptime to serial monitor
-<b>void printVariableFooter()</b> -- Prints elapsed time between polls and summary of data
+  <pre><h2>snmp.h</h2><b>void SNMPsetup(int Array[])</b> -- <i>Sets up a list of ports that you will be pulling data from.</i>
+<b>int snmpInLoop(int Array[])</b> -- <i>Returns the Average difference in data since the last poll coming IN to the switch.</i>
+<b>int snmpOutLoop(int Array[])</b> -- <i>Returns the Average difference in data since the last poll coming OUT of the switch.</i>
+<b>void printVariableHeader()</b> -- <i>Prints switch name & uptime to serial monitor.</i>
+<b>void printVariableFooter()</b> -- <i>Prints elapsed time between polls and summary of data.</i>
 
-<h2>lablights.h</h2><b>void initFastLED()</b> -- will add your strip to fastled index (required)
-<b>void litArray()</b> -- Must be called in every iteration of your main loop() function (runs as a frame)
-<b>void forwardEvent(CRGB fColor, int strip)</b> -- Sends a pulse down the strip from index 0
-<b>void reverseEvent(CRGB rColor, int strip)</b> -- Sends a pulse towards the beginning from the end of the strip
+<h2>lablights.h</h2><b>void initFastLED()</b> -- <i>will add your strip to fastled index (required)</i>
+<b>void litArray()</b> -- <i>Must be called in every iteration of your main loop() function (runs as a frame)</i>
+<b>void forwardEvent(CRGB fColor, int strip)</b> -- <i>Sends a pulse down the strip from index 0.</i>
+<b>void reverseEvent(CRGB rColor, int strip)</b> -- <i>Sends a pulse towards the beginning from the end of the strip.</i>
 </pre>
 </div>
 
