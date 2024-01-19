@@ -36,14 +36,17 @@ const int Array1Count = NUMOFPORTS1;
 // We'll use arrays for some to store the multiple values of our lastInOctets, responseInOctets and oids
 const char *oidSysName = ".1.3.6.1.2.1.1.5.0";       // This is the OID string we query to get the system name (SysName) of the Switch. 
 const char *oidUptime = ".1.3.6.1.2.1.1.3.0";        // This OID gets us the uptime of the Switch (hundredths of seconds)
+
 unsigned int responseInOctets1[Array1Count] = {0};  // This will create a resizable array as big as the numberOfPorts we want to poll established above.
 unsigned int responseOutOctets1[Array1Count] = {0}; // We need arrays for in and out. 
 unsigned int lastOutOctets1[Array1Count] = {0};     // The 'response' arrays will store the data we get from our query, and the 'last' arrays store the value
 unsigned int lastInOctets1[Array1Count] = {0};      // from the last time it was polled so we can compare against.
 unsigned int in1[Array1Count] = {0};                // These two items store the difference. 
-unsigned int out1[Array1Count] = {0}; 
+unsigned int out1[Array1Count] = {0};
 const char* oidInOctets1[Array1Count];  // We will need to populate this array with the OID strings for the ifInOctets (and out) for each of our ports
-const char* oidOutOctets1[Array1Count]; // and we have to do that in setup 
+const char* oidOutOctets1[Array1Count]; // and we have to do that in setup
+
+
 char sysName[50]; // empty string thats big enough for 50 characters I guess
 char *sysNameResponse = sysName; // will be replaced once we get a response
 unsigned int uptime = 0; 
@@ -69,20 +72,20 @@ ValueCallback *callbackUptime;
 // Declare some empty functions? not sure why we do this... 
 
 // void createArrays();
-void getInSNMP(int Array[]);
-void getOutSNMP(int Array[]);
-void printInOutputs(int Array[]);
-void printOutOutputs(int Array[]);
+void getInSNMP(int Array[], int arrayCount);
+void getOutSNMP(int Array[], int arrayCount);
+void printInOutputs(int Array[], int arrayCount);
+void printOutOutputs(int Array[], int arrayCount);
 void printVariableHeader();
 void printVariableFooter();
 
-void SNMPsetup(int Array[])
+void SNMPsetup(int Array[], int arrayCount)
 {
   snmp.setUDP(&udp); // give snmp a pointer to the UDP object
   snmp.begin();      // start the SNMP Manager
 
   // Get callbacks from creating a handler for each of the OID
-  for (int i = 0; i < Array1Count; ++i) {
+  for (int i = 0; i < arrayCount; ++i) {
     int o = Array[i];
     std::string oidInStr = ".1.3.6.1.2.1.2.2.1.10." + std::to_string(o); // create the list of inOids 
     std::string oidOutStr = ".1.3.6.1.2.1.2.2.1.16." + std::to_string(o); // create the list of outOids
@@ -95,22 +98,22 @@ void SNMPsetup(int Array[])
   callbackUptime = snmp.addTimestampHandler(Switch, oidUptime, &uptime);
 }
 
-int snmpInLoop(int Array[]){
+int snmpInLoop(int Array[], int arrayCount){
   snmp.loop();
-  getInSNMP(Array);
-  printInOutputs(Array);
+  getInSNMP(Array, arrayCount);
+  printInOutputs(Array, arrayCount);
   return in1Avg;
 }
-int snmpOutLoop(int Array[]){
+int snmpOutLoop(int Array[], int arrayCount){
   snmp.loop();
-  getOutSNMP(Array);
-  printOutOutputs(Array);
+  getOutSNMP(Array, arrayCount);
+  printOutOutputs(Array, arrayCount);
   return out1Avg;
 }
 
-void getInSNMP(int Array[])
+void getInSNMP(int Array[], int arrayCount)
 {
-  for (int i = 0; i < Array1Count; ++i) {
+  for (int i = 0; i < arrayCount; ++i) {
   int o = Array[i];
   snmpRequest.addOIDPointer(callbackInOctets[o]);
   }
@@ -123,9 +126,9 @@ void getInSNMP(int Array[])
   snmpRequest.clearOIDList();
 }
 
-void getOutSNMP(int Array[])
+void getOutSNMP(int Array[], int arrayCount)
 {
-  for (int i = 0; i < Array1Count; ++i) {
+  for (int i = 0; i < arrayCount; ++i) {
   int o = Array[i];
   snmpRequest.addOIDPointer(callbackOutOctets[o]);
   }
@@ -138,15 +141,15 @@ void getOutSNMP(int Array[])
   snmpRequest.clearOIDList();
 }
 
-void printInOutputs(int Array[]) {
+void printInOutputs(int Array[], int arrayCount) {
   // We will be receiving a number of snmp responses from our Switch reporting how many octets of data were received and sent for each of the polled ports. 
   // We will query anywhere from one to 48 ports, and assign each response to a variable such as "responseInOctets[0]" for  port 1, and so on.
   // for each of our responses, as responseInOctets[#] subtract lastInOctets[#] from it and assign it to a variable in[#]
   // then print the variable in#, and do the same to out while we are at it.
   in1Avg = 0;
   in1Total = 0;
-  for (int i = 0; i < Array1Count; ++i) {
-    int o = Array[i];
+  for (int i = 0; i < arrayCount; ++i) {
+    int o = Array[i]; // iterate positions through our array of ports, EX: position 0 is the first number in our ports to check array
     in1[o] = responseInOctets1[o]-lastInOctets1[o];
     in1Total += in1[o];
     Serial.print("Port "); 
@@ -157,10 +160,10 @@ void printInOutputs(int Array[]) {
     lastInOctets1[o] = responseInOctets1[o];
   }
   Serial.println();
-  in1Avg = in1Total/Array1Count;
+  in1Avg = in1Total/arrayCount;
 }
 
-void printOutOutputs(int Array[]) {
+void printOutOutputs(int Array[], int arrayCount) {
   // We will be receiving a number of snmp responses from our Switch reporting how many octets of data were received and sent for each of the polled ports. 
   // We will query anywhere from one to 48 ports, and assign each response to a variable such as "responseInOctets[0]" for  port 1, and so on.
   // for each of our responses, as responseInOctets[#] subtract lastInOctets[#] from it and assign it to a variable in[#]
@@ -168,7 +171,7 @@ void printOutOutputs(int Array[]) {
   out1Avg = 0;
   out1Total = 0;
   Serial.println();
-  for (int i = 0; i < Array1Count; ++i) {
+  for (int i = 0; i < arrayCount; ++i) {
     int o = Array[i];
     out1[o] = responseOutOctets1[o]-lastOutOctets1[o];
     out1Total += out1[o];
@@ -180,7 +183,7 @@ void printOutOutputs(int Array[]) {
     Serial.println();
   }
   Serial.println();
-  out1Avg = out1Total/Array1Count;
+  out1Avg = out1Total/arrayCount;
 }
 
 void printVariableHeader()

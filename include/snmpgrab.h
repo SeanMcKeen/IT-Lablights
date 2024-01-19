@@ -1,5 +1,5 @@
-void SNMPsetup(int Array[]);
-int snmpInLoop(int Array[]);
-int snmpOutLoop(int Array[]);
+void SNMPsetup(int Array[], int sizeOfArray);
+int snmpInLoop(int Array[], int sizeOfArray);
+int snmpOutLoop(int Array[], int sizeOfArray);
 void printVariableHeader();
 void printVariableFooter();

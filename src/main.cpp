@@ -13,21 +13,38 @@ unsigned long pollStart = 0;
 unsigned long intervalBetweenPolls = 0;
 
 unsigned long inPulseInterval = 0;
+unsigned long inPulseInterval2 = 0;
 unsigned long outPulseInterval = 0;
+unsigned long outPulseInterval2 = 0;
+
+//We need a previous pulse for each strips' forward and backward 2*NUM_CHANNELS
 unsigned long previousPulseMillis = 0;
 unsigned long previousPulseMillis2 = 0;
-
 unsigned long previousPulseMillis3 = 0;
 unsigned long previousPulseMillis4 = 0;
 unsigned long previousPulseMillis5 = 0;
+unsigned long previousPulseMillis6 = 0;
+unsigned long previousPulseMillis7 = 0;
+unsigned long previousPulseMillis8 = 0;
 
 unsigned long pulsesToSendForward = 0;
+unsigned long pulsesToSendForward2 = 0;
 unsigned long pulsesToSendReverse = 0;
-unsigned int pulsesSentForward = 0;
-unsigned int pulsesSentReverse = 0;
+unsigned long pulsesToSendReverse2 = 0;
+
+unsigned int pulsesSentForward = 0; // pulses sent forward on strip 1
+unsigned int pulsesSentForward2 = 0; // pulses sent forward on strip 2 
+unsigned int pulsesSentForward3 = 0;
+unsigned int pulsesSentForward4 = 0;
+unsigned int pulsesSentReverse = 0; // pulses sent reverse on strip 1 
+unsigned int pulsesSentReverse2 = 0; // pulses sent reverse on strip 2 
+unsigned int pulsesSentReverse3 = 0;
+unsigned int pulsesSentReverse4 = 0;
 
 CRGB forwardColor = CRGB::Blue;
+CRGB forwardColor2 = CRGB::Blue;
 CRGB reverseColor = CRGB::Blue;
+CRGB reverseColor2 = CRGB::Blue;
 
 #if LABLIGHTS // Here's where we include Lablights ONLY header files, saves space and time in case we want to build a different project
 #include <enablewifi.h>
@@ -37,30 +54,32 @@ CRGB reverseColor = CRGB::Blue;
 
 int Array1[] = ARRAY_1;
 
+int ArrayTest[] = {1, 2};
+int ArrayTest2[] = {3, 4};
+
+
 void setup() {
   if (PROJECT_NAME == "Lablights") { // Again, setup exclusive to Lablights
     Serial.begin(115200); // Begin serial monitor, so we can write outputs
     WifiBegin();
-    SNMPsetup(Array1); // Must be called for every port array being used.
+    SNMPsetup(ArrayTest, 2); // Must be called for every port array being used.
+    SNMPsetup(ArrayTest2, 2); // Must be called for every port array being used.
     initFastLED();
   }
 }
 
-// The "*" symbol tells it to use this variable to point to the one passed to the function, this allows me to update the original variable inside of this function.
-// essentially this can be used as a time check that I wont have to replicate over and over and over
-bool checkTimes(unsigned long *prevMillisToCheck, int IntervalToCheck) {
+void sendPulse(CRGB color, int strip, unsigned int *pulsesSentVar, int pulsesMaxSend, unsigned long *prevMillisOfPulse, unsigned long interval, int direction){
   unsigned long currentMillis = millis();
-  if (currentMillis - *prevMillisToCheck >= IntervalToCheck){
-    *prevMillisToCheck = currentMillis;
-    return true;
-  } else return false;
-}
-
-// again, just so I dont have to write it over and over and over...
-bool checkPulses(int pulsesSent, int pulsesBeingSent){
-  if (pulsesSent < pulsesBeingSent){
-    return true;
-  } else return false;
+  if (currentMillis - *prevMillisOfPulse >= interval){
+    *prevMillisOfPulse = currentMillis;
+    if (*pulsesSentVar < pulsesMaxSend){
+      if (direction == 1){
+        forwardEvent(color, strip);
+      }else if (direction == 0){
+        reverseEvent(color, strip);
+      }
+    }
+  }
 }
 
 void loop() {
@@ -69,39 +88,43 @@ void loop() {
     intervalBetweenPolls = millis() - pollStart;
     if (intervalBetweenPolls >= pollInterval) {
       pollStart += pollInterval; // this prevents drift in the delays
-      int InAvg = snmpInLoop(Array1); // snmpInLoop() can be found in snmp.cpp to see functionality
-      int OutAvg = snmpOutLoop(Array1); // snmpOutLoop() can be found in snmp.cpp to see functionality
+
       printVariableHeader(); // Another func from snmp.cpp, prints debugging data in serial output
+
+      // This block establishes the establishment of all variables for strip 1 pulses
+      int InAvg = snmpInLoop(Array1, 2); // snmpInLoop() can be found in snmp.cpp to see functionality
+      int OutAvg = snmpOutLoop(Array1, 2); // snmpOutLoop() can be found in snmp.cpp to see functionality
       pulsesToSendReverse = calcSNMPPulses(InAvg); // The IN of the switch, we want the comet travelling from the end of the strip, back towards the device.
       reverseColor = calcPulseColor2(InAvg);
       inPulseInterval = 10/pulsesToSendReverse * 1000; // We do this to spread the pulses evenly over 10 seconds, if we want to send 3 pulses it will send a pulse every 3333 milliseconds (3.3 seconds)
       pulsesToSendForward = calcSNMPPulses(OutAvg); // The OUT of the switch, we want the comet travelling from the beginning of the strip, away from the device.
       forwardColor = calcPulseColor(OutAvg);
       outPulseInterval = 10/pulsesToSendForward * 1000;
+
+      // This block establishes the establishment of all variables for strip 2 pulses
+      int InAvg2 = snmpInLoop(ArrayTest2, 2);
+      int OutAvg2 = snmpOutLoop(ArrayTest2, 2);
+      pulsesToSendReverse2 = calcSNMPPulses(InAvg2);
+      reverseColor2 = calcPulseColor2(InAvg2);
+      inPulseInterval2 = 10/pulsesToSendReverse2 * 1000;
+      pulsesToSendForward2 = calcSNMPPulses(OutAvg2);
+      forwardColor2 = calcPulseColor(OutAvg2);
+      outPulseInterval2 = 10/pulsesToSendForward2 * 1000;
+
       printVariableFooter();
+
       pulsesSentForward = 0; // Resetting these after each poll
+      pulsesSentForward2 = 0;
       pulsesSentReverse = 0;
+      pulsesSentReverse2 = 0;
     }
     // handle sending the pulses every x seconds
-    // the "&" symbol establishes that im going to be using it as a pointer (checkTimes() for more info)
-    if (checkTimes(&previousPulseMillis, outPulseInterval)) {
-      if (checkPulses(pulsesSentReverse, pulsesToSendReverse)){ // simple check to make sure we're sending the right amount
-        pulsesSentReverse += 1;
-        reverseEvent(reverseColor, 1); // func call to start a new pulse
-        reverseEvent(reverseColor, 2);
-        reverseEvent(reverseColor, 3);
-        reverseEvent(reverseColor, 4);
-      }
-    }
-    // same but forward instead of reverse
-    if (checkTimes(&previousPulseMillis2, inPulseInterval)){
-      if (checkPulses(pulsesSentForward, pulsesToSendForward)){
-        pulsesSentForward += 1;
-        forwardEvent(forwardColor, 1);
-        forwardEvent(forwardColor, 2);
-        forwardEvent(forwardColor, 3);
-        forwardEvent(forwardColor, 4);
-      }
-    }
+    // EACH pulse needs its own set of variables if you want it to be independent
+    // Essentially we want each strip handling an array, since we have 4 strips, it would be appropriate to have 4 arrays.
+    sendPulse(forwardColor, 1, &pulsesSentForward, pulsesToSendForward, &previousPulseMillis, outPulseInterval, 1);
+    sendPulse(forwardColor2, 2, &pulsesSentForward2, pulsesToSendForward2, &previousPulseMillis2, outPulseInterval2, 1);
+
+    sendPulse(reverseColor, 1, &pulsesSentReverse, pulsesToSendReverse, &previousPulseMillis5, inPulseInterval, 0);
+    sendPulse(reverseColor2, 2, &pulsesSentReverse2, pulsesToSendReverse2, &previousPulseMillis6, inPulseInterval2, 0);
   }
 }  

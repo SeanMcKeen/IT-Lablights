@@ -39,5 +39,5 @@
     #define COLOR_ORDER     RGB // Currently affects nothing
 
     #define ARRAY_1        {1,2,3,4,5,6,7,8} // an array of ports you want to be checked for snmp data
-    #define NUMOFPORTS1    8 // how many ports you defined above, idk how else to do this
+    #define NUMOFPORTS1    2 // how many ports you defined above, idk how else to do this
 #endif
