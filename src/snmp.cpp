@@ -53,11 +53,13 @@ unsigned int uptime = 0;
 unsigned int lastUptime = 0; 
 // unsigned long pollStart = 0;
 // unsigned long intervalBetweenPolls = 0;
-unsigned int in1Total = 0;
-unsigned int in1Avg = 0;
-unsigned int out1Total = 0;
-unsigned int out1Avg = 0;
-unsigned int getCounter = 0;
+int in1Total = 0;
+int out1Total = 0;
+int arr1Totals[2] = {};
+
+int in2Total = 0;
+int out2Total = 0;
+int arr2Totals[2] = {};
 
 // SNMP Objects
 WiFiUDP udp;                                           // UDP object used to send and receive packets
@@ -72,10 +74,12 @@ ValueCallback *callbackUptime;
 // Declare some empty functions? not sure why we do this... 
 
 // void createArrays();
+void snmpLoop(int Array[], int arrayCount, int arrayIndex);
 void getInSNMP(int Array[], int arrayCount);
 void getOutSNMP(int Array[], int arrayCount);
-void printInOutputs(int Array[], int arrayCount);
-void printOutOutputs(int Array[], int arrayCount);
+void handleAllOutputs(int Array[], int arrayCount, int arrayIndex);
+void setTotals(int arrayIndex);
+
 void printVariableHeader();
 void printVariableFooter();
 
@@ -98,17 +102,62 @@ void SNMPsetup(int Array[], int arrayCount)
   callbackUptime = snmp.addTimestampHandler(Switch, oidUptime, &uptime);
 }
 
-int snmpInLoop(int Array[], int arrayCount){
+void snmpLoop(int Array[], int arrayCount, int arrayIndex){ // the port array, the amount of values in the array, and which array it is: 1st array would be 1, etc.
   snmp.loop();
   getInSNMP(Array, arrayCount);
-  printInOutputs(Array, arrayCount);
-  return in1Avg;
-}
-int snmpOutLoop(int Array[], int arrayCount){
-  snmp.loop();
   getOutSNMP(Array, arrayCount);
-  printOutOutputs(Array, arrayCount);
-  return out1Avg;
+  handleAllOutputs(Array, arrayCount, arrayIndex);
+  setTotals(arrayIndex);
+}
+
+void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
+  in1Total = 0;
+  out1Total = 0;
+
+  int* variableToUseIN;
+  int* variableToUseOUT;
+  
+
+  if (arrayIndex == 1) {
+    variableToUseIN = &in1Total;
+    variableToUseOUT = &out1Total;
+  }else if(arrayIndex == 2){
+    variableToUseIN = &in2Total;
+    variableToUseOUT = &out2Total;
+  }
+
+  for (int i = 0; i < arrayCount; ++i) {
+    int o = Array[i]; // iterate positions through our array of ports, EX: position 0 is the first number in our ports to check array
+    in1[o] = responseInOctets1[o]-lastInOctets1[o];
+    variableToUseIN += in1[o];
+    lastInOctets1[o] = responseInOctets1[o];
+  }
+  for (int i = 0; i < arrayCount; ++i) {
+    int o = Array[i];
+    out1[o] = responseOutOctets1[o]-lastOutOctets1[o];
+    variableToUseOUT += out1[o];
+    lastOutOctets1[o] = responseOutOctets1[o];
+  }
+}
+
+void setTotals(int arrayIndex){
+  int* varToUseIN;
+  int* varToUseOUT;
+
+  if (arrayIndex == 1){
+    varToUseIN = &in1Total;
+    varToUseOUT = &out1Total;
+  }else if (arrayIndex == 2){
+    varToUseIN = &in2Total;
+    varToUseOUT = &out2Total;
+  }
+  for (int i; i < 2; i++){
+    if (i == 0){
+      arr1Totals[i] = *varToUseIN;
+    }else if (i == 1){
+      arr1Totals[i] = *varToUseOUT;
+    }
+  }
 }
 
 void getInSNMP(int Array[], int arrayCount)
@@ -141,51 +190,6 @@ void getOutSNMP(int Array[], int arrayCount)
   snmpRequest.clearOIDList();
 }
 
-void printInOutputs(int Array[], int arrayCount) {
-  // We will be receiving a number of snmp responses from our Switch reporting how many octets of data were received and sent for each of the polled ports. 
-  // We will query anywhere from one to 48 ports, and assign each response to a variable such as "responseInOctets[0]" for  port 1, and so on.
-  // for each of our responses, as responseInOctets[#] subtract lastInOctets[#] from it and assign it to a variable in[#]
-  // then print the variable in#, and do the same to out while we are at it.
-  in1Avg = 0;
-  in1Total = 0;
-  for (int i = 0; i < arrayCount; ++i) {
-    int o = Array[i]; // iterate positions through our array of ports, EX: position 0 is the first number in our ports to check array
-    in1[o] = responseInOctets1[o]-lastInOctets1[o];
-    in1Total += in1[o];
-    Serial.print("Port "); 
-    Serial.print(o); 
-    Serial.print(" In: ");
-    Serial.print(in1[o]);
-    Serial.println();
-    lastInOctets1[o] = responseInOctets1[o];
-  }
-  Serial.println();
-  in1Avg = in1Total/arrayCount;
-}
-
-void printOutOutputs(int Array[], int arrayCount) {
-  // We will be receiving a number of snmp responses from our Switch reporting how many octets of data were received and sent for each of the polled ports. 
-  // We will query anywhere from one to 48 ports, and assign each response to a variable such as "responseInOctets[0]" for  port 1, and so on.
-  // for each of our responses, as responseInOctets[#] subtract lastInOctets[#] from it and assign it to a variable in[#]
-  // then print the variable in#, and do the same to out while we are at it.
-  out1Avg = 0;
-  out1Total = 0;
-  Serial.println();
-  for (int i = 0; i < arrayCount; ++i) {
-    int o = Array[i];
-    out1[o] = responseOutOctets1[o]-lastOutOctets1[o];
-    out1Total += out1[o];
-    Serial.print("Port "); 
-    Serial.print(o); 
-    Serial.print(" Out: ");
-    Serial.print(out1[o]);
-    lastOutOctets1[o] = responseOutOctets1[o];
-    Serial.println();
-  }
-  Serial.println();
-  out1Avg = out1Total/arrayCount;
-}
-
 void printVariableHeader()
 { // just the header really.
   Serial.print("My IP: ");
@@ -197,13 +201,13 @@ void printVariableHeader()
 
 void printVariableFooter()
 {
-  Serial.printf("In Averaged: %d\n", in1Avg);
-  Serial.printf("Out Averaged: %d\n", out1Avg);
+  unsigned long currentTime = millis();
   Serial.print("----- elapsed: ");
-  Serial.print(uptime - lastUptime);
+  Serial.print(currentTime - lastUptime);
   Serial.println(" -----");
   // Update last samples
-  lastUptime = uptime;
+  lastUptime = currentTime;
+  Serial.println();
 }
 
 
