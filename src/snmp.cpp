@@ -102,8 +102,11 @@ void SNMPsetup(int Array[], int arrayCount)
   callbackUptime = snmp.addTimestampHandler(Switch, oidUptime, &uptime);
 }
 
-void snmpLoop(int Array[], int arrayCount, int arrayIndex){ // the port array, the amount of values in the array, and which array it is: 1st array would be 1, etc.
+void callLoop(){
   snmp.loop();
+}
+
+void snmpLoop(int Array[], int arrayCount, int arrayIndex){ // the port array, the amount of values in the array, and which array it is: 1st array would be 1, etc.
   getInSNMP(Array, arrayCount);
   getOutSNMP(Array, arrayCount);
   handleAllOutputs(Array, arrayCount, arrayIndex);
@@ -129,15 +132,16 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
   for (int i = 0; i < arrayCount; ++i) {
     int o = Array[i]; // iterate positions through our array of ports, EX: position 0 is the first number in our ports to check array
     in1[o] = responseInOctets1[o]-lastInOctets1[o];
-    variableToUseIN += in1[o];
+    *variableToUseIN += in1[o];
     lastInOctets1[o] = responseInOctets1[o];
   }
   for (int i = 0; i < arrayCount; ++i) {
     int o = Array[i];
     out1[o] = responseOutOctets1[o]-lastOutOctets1[o];
-    variableToUseOUT += out1[o];
+    *variableToUseOUT += out1[o];
     lastOutOctets1[o] = responseOutOctets1[o];
   }
+  
 }
 
 void setTotals(int arrayIndex){
@@ -151,13 +155,8 @@ void setTotals(int arrayIndex){
     varToUseIN = &in2Total;
     varToUseOUT = &out2Total;
   }
-  for (int i; i < 2; i++){
-    if (i == 0){
-      arr1Totals[i] = *varToUseIN;
-    }else if (i == 1){
-      arr1Totals[i] = *varToUseOUT;
-    }
-  }
+  arr1Totals[0] = *varToUseIN;
+  arr1Totals[1] = *varToUseOUT;
 }
 
 void getInSNMP(int Array[], int arrayCount)

@@ -90,6 +90,7 @@ void sendPulse(CRGB color, int strip, unsigned int *pulsesSentVar, int pulsesMax
 
 void loop() {
   litArray();
+  callLoop();
   if (PROJECT_NAME == "Lablights") {
     intervalBetweenPolls = millis() - pollStart;
     if (intervalBetweenPolls >= pollInterval) {
@@ -112,7 +113,7 @@ void loop() {
       forwardColor = calcPulseColor(OutAvg);
       outPulseInterval = pollTiming/pulsesToSendForward * 1000;
 
-      // This block establishes the establishment of all variables for strip 2 pulses
+      // This block establishes all variables for strip 2 pulses
       snmpLoop(ArrayTest2, 2, 2);
       int InAvg2Raw = arr2Totals[0];
       int InAvg2 = InAvg2Raw - lastInAvg2;
