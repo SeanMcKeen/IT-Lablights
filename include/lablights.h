@@ -3,6 +3,11 @@
 
 extern CRGB leds[NUM_LEDS];
 
+extern bool Strip1;
+extern bool Strip2;
+extern bool Strip3;
+extern bool Strip4;
+
 void initFastLED();
 void ledPulse(int pulseSize, CRGB pulseColor, int pulseSpeed);
 void litArray();

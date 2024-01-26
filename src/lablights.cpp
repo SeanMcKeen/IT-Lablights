@@ -13,6 +13,18 @@ CRGB reverseColors[MAX_COMETS];
 
 // The "Splitpoints" as I like to call them, establish a location in leds[] that doesn't exist on our strips, that way we can use these gaps as the endings for each strip
 // EX: when the first strip comet hits LedSplit1 it will reset to the position of -1 (our reset point). Without these gaps the strip would show an unlit LED at the end of the strip.
+
+#if NUM_CHANNELS == 2
+  bool Strip2 = true;
+#elif NUM_CHANNELS == 3
+  bool Strip2 = true;
+  bool Strip3 = true;
+#elif NUM_CHANNELS == 4
+  bool Strip2 = true;
+  bool Strip3 = true;
+  bool Strip4 = true;
+#endif
+
 int LedSplit1 = NUM_LEDS + 1;
 int LedSplit2 = LedSplit1 + NUM_LEDS2 + 1;
 int LedSplit3 = LedSplit2 + NUM_LEDS3 + 1;
@@ -32,18 +44,14 @@ void initFastLED() {
   // According to FastLed documentation, we can do this a few ways, with multiple arrays, or with one main array with different offsets
   // I chose to use the offset method as I believe it will be better for this usage. (and it's easier)
   FastLED.addLeds<LED_TYPE, DATA_PIN1>(leds, LedStart1, NUM_LEDS);
-  if (NUM_CHANNELS == 2) {
+  if (Strip2) {
     FastLED.addLeds<LED_TYPE, DATA_PIN2>(leds, LedStart2, NUM_LEDS2);
-
-  }else if (NUM_CHANNELS == 3) {
-    FastLED.addLeds<LED_TYPE, DATA_PIN2>(leds, LedStart2, NUM_LEDS2);
+    if (Strip3) {
     FastLED.addLeds<LED_TYPE, DATA_PIN3>(leds, LedStart3, NUM_LEDS3);
-
-  }else if (NUM_CHANNELS == 4) {
-    FastLED.addLeds<LED_TYPE, DATA_PIN2>(leds, LedStart2, NUM_LEDS2);
-    FastLED.addLeds<LED_TYPE, DATA_PIN3>(leds, LedStart3, NUM_LEDS3);
-    FastLED.addLeds<LED_TYPE, DATA_PIN4>(leds, LedStart4, NUM_LEDS4);
-
+      if (Strip4) {
+        FastLED.addLeds<LED_TYPE, DATA_PIN4>(leds, LedStart4, NUM_LEDS4);
+      }
+    }
   }
   FastLED.setBrightness(BRIGHTNESS);
 }

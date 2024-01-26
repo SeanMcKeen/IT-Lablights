@@ -1,6 +1,5 @@
 #include <globals.h>
 #include <secrets.h>
-#include <mathhandler.h>
 // Place header files above, headers are like pointers to other files in the project. 
 // Headers must include function definitions for functions you want to use in other files. 
 // Header files SHOULD be named the same as the cpp file they correspond to.
@@ -52,10 +51,17 @@ int lastInAvg2 = 0;
 int lastOutAvg = 0;
 int lastOutAvg2 = 0;
 
+//Strip 2 Variables (Even if we're not using strip 2)
+int InAvg2;
+int InAvg2Raw;
+int OutAvg2;
+int OutAvg2Raw;
+
 #if LABLIGHTS // Here's where we include Lablights ONLY header files, saves space and time in case we want to build a different project
 #include <enablewifi.h>
 #include <snmpgrab.h>
 #include <lablights.h>
+#include <mathhandler.h>
 #endif
 
 int Array1[] = ARRAY_1;
@@ -63,8 +69,10 @@ int Array1[] = ARRAY_1;
 int ArrayTest[] = {1, 2};
 int ArrayTest2[] = {3, 4};
 
+// define functions
+void sendPulse(CRGB color, int strip, unsigned int *pulsesSentVar, int pulsesMaxSend, unsigned long *prevMillisOfPulse, unsigned long interval, int direction);
 
-void setup() {
+void setup() { // Main Setup
   if (PROJECT_NAME == "Lablights") { // Again, setup exclusive to Lablights
     Serial.begin(115200); // Begin serial monitor, so we can write outputs
     WifiBegin();
@@ -74,24 +82,11 @@ void setup() {
   }
 }
 
-void sendPulse(CRGB color, int strip, unsigned int *pulsesSentVar, int pulsesMaxSend, unsigned long *prevMillisOfPulse, unsigned long interval, int direction){
-  unsigned long currentMillis = millis();
-  if (currentMillis - *prevMillisOfPulse >= interval){
-    *prevMillisOfPulse = currentMillis;
-    if (*pulsesSentVar < pulsesMaxSend){
-      if (direction == 1){
-        forwardEvent(color, strip);
-      }else if (direction == 0){
-        reverseEvent(color, strip);
-      }
-    }
-  }
-}
-
+// Main loop
 void loop() {
-  litArray();
-  callLoop();
   if (PROJECT_NAME == "Lablights") {
+    litArray();
+    callLoop();
     intervalBetweenPolls = millis() - pollStart;
     if (intervalBetweenPolls >= pollInterval) {
       pollStart += pollInterval; // this prevents drift in the delays
@@ -114,19 +109,26 @@ void loop() {
       outPulseInterval = pollTiming/pulsesToSendForward * 1000;
 
       // This block establishes all variables for strip 2 pulses
-      snmpLoop(ArrayTest2, 2, 2);
-      int InAvg2Raw = arr2Totals[0];
-      int InAvg2 = InAvg2Raw - lastInAvg2;
-      lastInAvg2 = InAvg2Raw;
-      int OutAvg2Raw = arr2Totals[1];
-      int OutAvg2 = OutAvg2Raw - lastOutAvg2;
-      lastOutAvg2 = OutAvg2Raw;
-      pulsesToSendReverse2 = calcSNMPPulses(InAvg2);
-      reverseColor2 = calcPulseColor2(InAvg2);
-      inPulseInterval2 = pollTiming/pulsesToSendReverse2 * 1000;
-      pulsesToSendForward2 = calcSNMPPulses(OutAvg2);
-      forwardColor2 = calcPulseColor(OutAvg2);
-      outPulseInterval2 = pollTiming/pulsesToSendForward2 * 1000;
+
+      int InAvg2 = 0;
+      int InAvg2Raw = 0;
+      int OutAvg2 = 0;
+      int OutAvg2Raw = 0;
+      if (Strip2){
+        snmpLoop(ArrayTest2, 2, 2);
+        InAvg2Raw = arr2Totals[0];
+        InAvg2 = InAvg2Raw - lastInAvg2;
+        lastInAvg2 = InAvg2Raw;
+        OutAvg2Raw = arr2Totals[1];
+        OutAvg2 = OutAvg2Raw - lastOutAvg2;
+        lastOutAvg2 = OutAvg2Raw;
+        pulsesToSendReverse2 = calcSNMPPulses(InAvg2);
+        reverseColor2 = calcPulseColor2(InAvg2);
+        inPulseInterval2 = pollTiming/pulsesToSendReverse2 * 1000;
+        pulsesToSendForward2 = calcSNMPPulses(OutAvg2);
+        forwardColor2 = calcPulseColor(OutAvg2);
+        outPulseInterval2 = pollTiming/pulsesToSendForward2 * 1000;
+      }
 
       Serial.printf("Data IN Average: %d\n", (InAvg+InAvg2)/2);
       Serial.printf("Data OUT Average: %d\n", (OutAvg+OutAvg2)/2);
@@ -148,5 +150,20 @@ void loop() {
 
     sendPulse(reverseColor, 1, &pulsesSentReverse, pulsesToSendReverse, &previousPulseMillis3, inPulseInterval, 0);
     sendPulse(reverseColor2, 2, &pulsesSentReverse2, pulsesToSendReverse2, &previousPulseMillis4, inPulseInterval2, 0);
+  }
+}
+
+// Lablights Functions
+void sendPulse(CRGB color, int strip, unsigned int *pulsesSentVar, int pulsesMaxSend, unsigned long *prevMillisOfPulse, unsigned long interval, int direction){
+  unsigned long currentMillis = millis();
+  if (currentMillis - *prevMillisOfPulse >= interval){
+    *prevMillisOfPulse = currentMillis;
+    if (*pulsesSentVar < pulsesMaxSend){
+      if (direction == 1){
+        forwardEvent(color, strip);
+      }else if (direction == 0){
+        reverseEvent(color, strip);
+      }
+    }
   }
 }
