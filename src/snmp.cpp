@@ -56,10 +56,12 @@ unsigned int lastUptime = 0;
 int in1Total = 0;
 int out1Total = 0;
 int arr1Totals[2] = {};
+int lastArr1Totals[2] = {};
 
 int in2Total = 0;
 int out2Total = 0;
 int arr2Totals[2] = {};
+int lastArr2Totals[2] = {};
 
 // SNMP Objects
 WiFiUDP udp;                                           // UDP object used to send and receive packets
@@ -132,31 +134,33 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
   for (int i = 0; i < arrayCount; ++i) {
     int o = Array[i]; // iterate positions through our array of ports, EX: position 0 is the first number in our ports to check array
     in1[o] = responseInOctets1[o]-lastInOctets1[o];
+    Serial.println();
+    Serial.printf("Port %i IN: ", o);
+    Serial.print(in1[o]);
     *variableToUseIN += in1[o];
     lastInOctets1[o] = responseInOctets1[o];
   }
+  Serial.println();
   for (int i = 0; i < arrayCount; ++i) {
     int o = Array[i];
     out1[o] = responseOutOctets1[o]-lastOutOctets1[o];
+    Serial.println();
+    Serial.printf("Port %i OUT: ", o);
+    Serial.print(out1[o]);
     *variableToUseOUT += out1[o];
     lastOutOctets1[o] = responseOutOctets1[o];
   }
-  
+  Serial.println();
 }
 
 void setTotals(int arrayIndex){
-  int* varToUseIN;
-  int* varToUseOUT;
-
   if (arrayIndex == 1){
-    varToUseIN = &in1Total;
-    varToUseOUT = &out1Total;
+    arr1Totals[0] = in1Total;
+    arr1Totals[1] = out1Total;
   }else if (arrayIndex == 2){
-    varToUseIN = &in2Total;
-    varToUseOUT = &out2Total;
+    arr2Totals[0] = in2Total;
+    arr2Totals[1] = out2Total;
   }
-  arr1Totals[0] = *varToUseIN;
-  arr1Totals[1] = *varToUseOUT;
 }
 
 void getInSNMP(int Array[], int arrayCount)

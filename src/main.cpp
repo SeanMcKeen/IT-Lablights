@@ -51,12 +51,6 @@ int lastInAvg2 = 0;
 int lastOutAvg = 0;
 int lastOutAvg2 = 0;
 
-//Strip 2 Variables (Even if we're not using strip 2)
-int InAvg2;
-int InAvg2Raw;
-int OutAvg2;
-int OutAvg2Raw;
-
 #if LABLIGHTS // Here's where we include Lablights ONLY header files, saves space and time in case we want to build a different project
 #include <enablewifi.h>
 #include <snmpgrab.h>
@@ -95,12 +89,8 @@ void loop() {
 
       // This block establishes the establishment of all variables for strip 1 pulses
       snmpLoop(ArrayTest, 2, 1); // snmpInLoop() can be found in snmp.cpp to see functionality
-      int InAvgRaw = arr1Totals[0];
-      int InAvg = InAvgRaw - lastInAvg;
-      lastInAvg = InAvgRaw;
-      int OutAvgRaw = arr1Totals[1];
-      int OutAvg = OutAvgRaw - lastOutAvg;
-      lastOutAvg = OutAvgRaw;
+      int InAvg = arr1Totals[0];
+      int OutAvg = arr1Totals[1];
       pulsesToSendReverse = calcSNMPPulses(InAvg); // The IN of the switch, we want the comet travelling from the end of the strip, back towards the device.
       reverseColor = calcPulseColor2(InAvg);
       inPulseInterval = pollTiming/pulsesToSendReverse * 1000; // We do this to spread the pulses evenly over 10 seconds, if we want to send 3 pulses it will send a pulse every 3333 milliseconds (3.3 seconds)
@@ -111,17 +101,11 @@ void loop() {
       // This block establishes all variables for strip 2 pulses
 
       int InAvg2 = 0;
-      int InAvg2Raw = 0;
       int OutAvg2 = 0;
-      int OutAvg2Raw = 0;
       if (Strip2){
         snmpLoop(ArrayTest2, 2, 2);
-        InAvg2Raw = arr2Totals[0];
-        InAvg2 = InAvg2Raw - lastInAvg2;
-        lastInAvg2 = InAvg2Raw;
-        OutAvg2Raw = arr2Totals[1];
-        OutAvg2 = OutAvg2Raw - lastOutAvg2;
-        lastOutAvg2 = OutAvg2Raw;
+        InAvg2 = arr2Totals[0];
+        OutAvg2 = arr2Totals[1];
         pulsesToSendReverse2 = calcSNMPPulses(InAvg2);
         reverseColor2 = calcPulseColor2(InAvg2);
         inPulseInterval2 = pollTiming/pulsesToSendReverse2 * 1000;
@@ -129,9 +113,6 @@ void loop() {
         forwardColor2 = calcPulseColor(OutAvg2);
         outPulseInterval2 = pollTiming/pulsesToSendForward2 * 1000;
       }
-
-      Serial.printf("Data IN Average: %d\n", (InAvg+InAvg2)/2);
-      Serial.printf("Data OUT Average: %d\n", (OutAvg+OutAvg2)/2);
       printVariableFooter();
 
       pulsesSentForward = 0; // Resetting these after each poll
