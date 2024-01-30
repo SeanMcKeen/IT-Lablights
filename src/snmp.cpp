@@ -37,12 +37,12 @@ const int Array1Count = NUMOFPORTS1;
 const char *oidSysName = ".1.3.6.1.2.1.1.5.0";       // This is the OID string we query to get the system name (SysName) of the Switch. 
 const char *oidUptime = ".1.3.6.1.2.1.1.3.0";        // This OID gets us the uptime of the Switch (hundredths of seconds)
 
-unsigned int responseInOctets[Array1Count] = {0};  // This will create a resizable array as big as the numberOfPorts we want to poll established above.
-unsigned int responseOutOctets[Array1Count] = {0}; // We need arrays for in and out. 
-int lastOutOctets1[Array1Count] = {0};     // The 'response' arrays will store the data we get from our query, and the 'last' arrays store the value
-int lastInOctets1[Array1Count] = {0};      // from the last time it was polled so we can compare against.
-int lastOutOctets2[Array1Count] = {0};
-int lastInOctets2[Array1Count] = {0};
+unsigned int responseInOctets[numberOfPorts] = {0};  // This will create a resizable array as big as the numberOfPorts we want to poll established above.
+unsigned int responseOutOctets[numberOfPorts] = {0}; // We need arrays for in and out. 
+int lastOutOctets1[numberOfPorts] = {0};     // The 'response' arrays will store the data we get from our query, and the 'last' arrays store the value
+int lastInOctets1[numberOfPorts] = {0};      // from the last time it was polled so we can compare against.
+int lastOutOctets2[numberOfPorts] = {0};
+int lastInOctets2[numberOfPorts] = {0};
 
 const char* oidInOctets1[Array1Count];  // We will need to populate this array with the OID strings for the ifInOctets (and out) for each of our ports
 const char* oidOutOctets1[Array1Count]; // and we have to do that in setup
@@ -123,8 +123,8 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
   int* variableToUseIN;
   int* variableToUseOUT;
 
-  int (*lastInOctets)[Array1Count];
-  int (*lastOutOctets)[Array1Count];
+  int (*lastInOctets)[numberOfPorts];
+  int (*lastOutOctets)[numberOfPorts];
   
 
   if (arrayIndex == 1) {
@@ -139,15 +139,22 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
     lastOutOctets = &lastOutOctets2;
   }
 
-  for (int i = 0; i < arrayCount; ++i) {
-    int o = Array[i]; // iterate positions through our array of ports, EX: position 0 is the first number in our ports to check array
-    int subT = responseInOctets[o]-*lastInOctets[o];
+  for (int i = 0; i < arrayCount; i++) {
+    // Verify that Array contains valid indices
+    int o = Array[i];
+
+    int subT = responseInOctets[o] - *lastInOctets[o];
+
+    // Debugging: Print the values to help identify issues
     Serial.println();
     Serial.printf("Port %i IN: ", o);
     Serial.print(subT);
+
+    // Verify pointers and perform calculations
     *variableToUseIN += subT;
     *lastInOctets[o] = responseInOctets[o];
   }
+
   Serial.println();
   for (int i = 0; i < arrayCount; ++i) {
     int o = Array[i];
