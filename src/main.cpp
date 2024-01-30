@@ -88,7 +88,7 @@ void loop() {
       printVariableHeader(); // Another func from snmp.cpp, prints debugging data in serial output
 
       // This block establishes the establishment of all variables for strip 1 pulses
-      snmpLoop(ArrayTest, 2, 1); // snmpInLoop() can be found in snmp.cpp to see functionality
+      snmpLoop(ArrayTest, 2, 1); // snmpLoop() can be found in snmp.cpp to see functionality
       int InAvg = arr1Totals[0];
       int OutAvg = arr1Totals[1];
       pulsesToSendReverse = calcSNMPPulses(InAvg); // The IN of the switch, we want the comet travelling from the end of the strip, back towards the device.

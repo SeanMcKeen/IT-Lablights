@@ -37,12 +37,13 @@ const int Array1Count = NUMOFPORTS1;
 const char *oidSysName = ".1.3.6.1.2.1.1.5.0";       // This is the OID string we query to get the system name (SysName) of the Switch. 
 const char *oidUptime = ".1.3.6.1.2.1.1.3.0";        // This OID gets us the uptime of the Switch (hundredths of seconds)
 
-unsigned int responseInOctets1[Array1Count] = {0};  // This will create a resizable array as big as the numberOfPorts we want to poll established above.
-unsigned int responseOutOctets1[Array1Count] = {0}; // We need arrays for in and out. 
-unsigned int lastOutOctets1[Array1Count] = {0};     // The 'response' arrays will store the data we get from our query, and the 'last' arrays store the value
-unsigned int lastInOctets1[Array1Count] = {0};      // from the last time it was polled so we can compare against.
-unsigned int in1[Array1Count] = {0};                // These two items store the difference. 
-unsigned int out1[Array1Count] = {0};
+unsigned int responseInOctets[Array1Count] = {0};  // This will create a resizable array as big as the numberOfPorts we want to poll established above.
+unsigned int responseOutOctets[Array1Count] = {0}; // We need arrays for in and out. 
+int lastOutOctets1[Array1Count] = {0};     // The 'response' arrays will store the data we get from our query, and the 'last' arrays store the value
+int lastInOctets1[Array1Count] = {0};      // from the last time it was polled so we can compare against.
+int lastOutOctets2[Array1Count] = {0};
+int lastInOctets2[Array1Count] = {0};
+
 const char* oidInOctets1[Array1Count];  // We will need to populate this array with the OID strings for the ifInOctets (and out) for each of our ports
 const char* oidOutOctets1[Array1Count]; // and we have to do that in setup
 
@@ -97,8 +98,8 @@ void SNMPsetup(int Array[], int arrayCount)
     std::string oidOutStr = ".1.3.6.1.2.1.2.2.1.16." + std::to_string(o); // create the list of outOids
     oidInOctets1[o] = oidInStr.c_str();
     oidOutOctets1[o] = oidOutStr.c_str();
-    callbackInOctets[o]= snmp.addCounter32Handler(Switch, oidInOctets1[o], &responseInOctets1[o]); // create callbacks array for the OID
-    callbackOutOctets[o]= snmp.addCounter32Handler(Switch, oidOutOctets1[o], &responseOutOctets1[o]); // create callbacks array for the OID
+    callbackInOctets[o]= snmp.addCounter32Handler(Switch, oidInOctets1[o], &responseInOctets[o]); // create callbacks array for the OID
+    callbackOutOctets[o]= snmp.addCounter32Handler(Switch, oidOutOctets1[o], &responseInOctets[o]); // create callbacks array for the OID
   }
   callbackSysName = snmp.addStringHandler(Switch, oidSysName, &sysNameResponse);
   callbackUptime = snmp.addTimestampHandler(Switch, oidUptime, &uptime);
@@ -121,34 +122,41 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
 
   int* variableToUseIN;
   int* variableToUseOUT;
+
+  int (*lastInOctets)[Array1Count];
+  int (*lastOutOctets)[Array1Count];
   
 
   if (arrayIndex == 1) {
     variableToUseIN = &in1Total;
+    lastInOctets = &lastInOctets1;
     variableToUseOUT = &out1Total;
+    lastOutOctets = &lastOutOctets1;
   }else if(arrayIndex == 2){
     variableToUseIN = &in2Total;
+    lastInOctets = &lastInOctets2;
     variableToUseOUT = &out2Total;
+    lastOutOctets = &lastOutOctets2;
   }
 
   for (int i = 0; i < arrayCount; ++i) {
     int o = Array[i]; // iterate positions through our array of ports, EX: position 0 is the first number in our ports to check array
-    in1[o] = responseInOctets1[o]-lastInOctets1[o];
+    int subT = responseInOctets[o]-*lastInOctets[o];
     Serial.println();
     Serial.printf("Port %i IN: ", o);
-    Serial.print(in1[o]);
-    *variableToUseIN += in1[o];
-    lastInOctets1[o] = responseInOctets1[o];
+    Serial.print(subT);
+    *variableToUseIN += subT;
+    *lastInOctets[o] = responseInOctets[o];
   }
   Serial.println();
   for (int i = 0; i < arrayCount; ++i) {
     int o = Array[i];
-    out1[o] = responseOutOctets1[o]-lastOutOctets1[o];
+    int subT = responseInOctets[o]-*lastInOctets[o];
     Serial.println();
     Serial.printf("Port %i OUT: ", o);
-    Serial.print(out1[o]);
-    *variableToUseOUT += out1[o];
-    lastOutOctets1[o] = responseOutOctets1[o];
+    Serial.print(subT);
+    *variableToUseOUT += subT;
+    *lastOutOctets[o] = responseOutOctets[o];
   }
   Serial.println();
 }
