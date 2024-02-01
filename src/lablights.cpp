@@ -1,5 +1,6 @@
 #include <FastLED.h>
 #include <globals.h>
+#include <random>
 
 // Add the number of channels because if you have 4 channels you need 4 "gaps" or spaces that dont exist
 const int TotalLeds = NUM_LEDS + NUM_LEDS2 + NUM_LEDS3 + NUM_LEDS4 + NUM_CHANNELS;
@@ -39,7 +40,7 @@ int LedStart3 = LedSplit2+1;
 int LedStart4 = LedSplit3+1;
 
 unsigned long previousMillis = 0;
-const long interval = 20; // Interval in milliseconds (How fast the pulses travel, decreasing this value increases the speeds)
+const long interval = SPEED;
 
 void fadeAll(); // Must be defined up here so it can be called before the actual definition
 
@@ -72,7 +73,8 @@ void litArray() {
     for (int i = 0; i < MAX_COMETS; i++) { // creates a pulse as long as there aren't more than the maximum comets/pulses
       //strip 1
       if (currentlyLitLedsForward[i] >= 0 && currentlyLitLedsForward[i] <= TotalLeds) { // We make sure the pulse fits within the bounds of the strip (currentlyLitLedsForward[1] would return the position of the first comet in the array EX: 80 would be LED 80/100 if it's a 100 LED strip)
-        leds[currentlyLitLedsForward[i]] += forwardColors[i]; // Set the LED to the color passed to the func, leds[] is the array used to send data to a specific LED, to send color data to LED 100 we would use leds[100] = COLOR
+        leds[currentlyLitLedsForward[i]] += forwardColors[i];
+        // Set the LED to the color passed to the func, leds[] is the array used to send data to a specific LED, to send color data to LED 100 we would use leds[100] = COLOR
         currentlyLitLedsForward[i]++; // Move the comet forward
 
         if (currentlyLitLedsForward[i] > TotalLeds || currentlyLitLedsForward[i] == LedSplit1 || currentlyLitLedsForward[i] == LedSplit2 || currentlyLitLedsForward[i] == LedSplit3) { // Check to see if it's gone to the end of the strip, then reset the comet
@@ -83,8 +85,9 @@ void litArray() {
 
     // Handle the reverse pulse
     for (int i = 0; i < MAX_COMETS; i++) { // Does the same exact thing as forwardpulse function above, but in reverse
-      if (currentlyLitLedsReverse[i] >= 0 && currentlyLitLedsReverse[i] <= TotalLeds) {
-        leds[currentlyLitLedsReverse[i]] += reverseColors[i]; // Set the LED to the color passed to the func
+      if (currentlyLitLedsReverse[i] >= 0 && currentlyLitLedsReverse[i] <= TotalLeds) {    
+        leds[currentlyLitLedsReverse[i]] += reverseColors[i];
+        // Set the LED to the color passed to the func
         currentlyLitLedsReverse[i]--; // Move the comet backward
 
         if (currentlyLitLedsReverse[i] < 0 || currentlyLitLedsReverse[i] == LedSplit1 || currentlyLitLedsReverse[i] == LedSplit2 || currentlyLitLedsReverse[i] == LedSplit3) {
@@ -102,9 +105,9 @@ void fadeAll() {
   // Fade out all LEDs
   for (int i = 0; i < TotalLeds; i++) { // We call fade out BEFORE establishing the pulse so that only the trail is being faded and not the head of the pulse.
   // Fades the color by an equal amount, that way the color appears the same while becomming dimmer. Note: do NOT use brightness to accomplish this as brightness is global to the entire strip and cannot be used for a single pulse.
-    if (leds[i].r > 0) leds[i].r -= leds[i].r*.20;
-    if (leds[i].g > 0) leds[i].g -= leds[i].g*.20;
-    if (leds[i].b > 0) leds[i].b -= leds[i].b*.20;
+    if (leds[i].r > 0) leds[i].r -= leds[i].r*.33;
+    if (leds[i].g > 0) leds[i].g -= leds[i].g*.33;
+    if (leds[i].b > 0) leds[i].b -= leds[i].b*.33;
   }
 }
 

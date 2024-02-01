@@ -17,8 +17,12 @@ int calcSNMPPulses(int Avg) { // Where we determine data to pulse ratio, an aver
         return 8;
     }else if (Avg < 500000) {
         return 9;
+    }else if (Avg < 1000000) {
+        return 12;
+    }else if (Avg < 3000000) {
+        return 15;
     }else{
-        return 10;
+        return 17;
     }
 }
 

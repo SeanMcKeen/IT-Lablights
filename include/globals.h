@@ -17,6 +17,7 @@
     #define BRIGHTNESS      100 // default is 64; MAX: 255
     #define NUM_CHANNELS    4 // number of strips being used (currently has no importance)
     #define MAX_COMETS      100 // To prevent the device from saving more spots than necessary and possibly causing delay or lag
+    #define SPEED           20 // Interval in milliseconds (How fast the pulses travel, decreasing this value increases the speeds) default: 20
 
     #define POWER_LIMIT_MW  (7.5 * 24 * 1000) // Expects at least a 24V 7.5A supply
 
