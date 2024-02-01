@@ -11,19 +11,22 @@ int currentlyLitLedsReverse[MAX_COMETS];
 CRGB forwardColors[MAX_COMETS];
 CRGB reverseColors[MAX_COMETS];
 
-// The "Splitpoints" as I like to call them, establish a location in leds[] that doesn't exist on our strips, that way we can use these gaps as the endings for each strip
-// EX: when the first strip comet hits LedSplit1 it will reset to the position of -1 (our reset point). Without these gaps the strip would show an unlit LED at the end of the strip.
-
 #if NUM_CHANNELS == 2
   bool Strip2 = true;
+  bool Strip3 = false;
+  bool Strip4 = false;
 #elif NUM_CHANNELS == 3
   bool Strip2 = true;
   bool Strip3 = true;
+  bool Strip4 = false;
 #elif NUM_CHANNELS == 4
   bool Strip2 = true;
   bool Strip3 = true;
   bool Strip4 = true;
 #endif
+
+// The "Splitpoints" as I like to call them, establish a location in leds[] that doesn't exist on our strips, that way we can use these gaps as the endings for each strip
+// EX: when the first strip comet hits LedSplit1 it will reset to the position of -1 (our reset point). Without these gaps the strip would show an unlit LED at the end of the strip.
 
 int LedSplit1 = NUM_LEDS + 1;
 int LedSplit2 = LedSplit1 + NUM_LEDS2 + 1;
@@ -69,7 +72,7 @@ void litArray() {
     for (int i = 0; i < MAX_COMETS; i++) { // creates a pulse as long as there aren't more than the maximum comets/pulses
       //strip 1
       if (currentlyLitLedsForward[i] >= 0 && currentlyLitLedsForward[i] <= TotalLeds) { // We make sure the pulse fits within the bounds of the strip (currentlyLitLedsForward[1] would return the position of the first comet in the array EX: 80 would be LED 80/100 if it's a 100 LED strip)
-        leds[currentlyLitLedsForward[i]] = forwardColors[i]; // Set the LED to the color passed to the func, leds[] is the array used to send data to a specific LED, to send color data to LED 100 we would use leds[100] = COLOR
+        leds[currentlyLitLedsForward[i]] += forwardColors[i]; // Set the LED to the color passed to the func, leds[] is the array used to send data to a specific LED, to send color data to LED 100 we would use leds[100] = COLOR
         currentlyLitLedsForward[i]++; // Move the comet forward
 
         if (currentlyLitLedsForward[i] > TotalLeds || currentlyLitLedsForward[i] == LedSplit1 || currentlyLitLedsForward[i] == LedSplit2 || currentlyLitLedsForward[i] == LedSplit3) { // Check to see if it's gone to the end of the strip, then reset the comet
@@ -81,7 +84,7 @@ void litArray() {
     // Handle the reverse pulse
     for (int i = 0; i < MAX_COMETS; i++) { // Does the same exact thing as forwardpulse function above, but in reverse
       if (currentlyLitLedsReverse[i] >= 0 && currentlyLitLedsReverse[i] <= TotalLeds) {
-        leds[currentlyLitLedsReverse[i]] = reverseColors[i]; // Set the LED to the color passed to the func
+        leds[currentlyLitLedsReverse[i]] += reverseColors[i]; // Set the LED to the color passed to the func
         currentlyLitLedsReverse[i]--; // Move the comet backward
 
         if (currentlyLitLedsReverse[i] < 0 || currentlyLitLedsReverse[i] == LedSplit1 || currentlyLitLedsReverse[i] == LedSplit2 || currentlyLitLedsReverse[i] == LedSplit3) {

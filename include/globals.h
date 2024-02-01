@@ -7,7 +7,7 @@
 
 
     #ifndef PROJECT_NAME
-    #define PROJECT_NAME    "Lablights" // This is 
+    #define PROJECT_NAME    "Lablights" // This is the main project, but in case we want to eventually have more.
     #endif
 
     #define SWITCH_IP       IPAddress(192,168,2,14) // IP address of the switch you're targeting
@@ -16,7 +16,7 @@
 
     #define BRIGHTNESS      100 // default is 64; MAX: 255
     #define NUM_CHANNELS    4 // number of strips being used (currently has no importance)
-    #define MAX_COMETS      40 // To prevent the device from saving more spots than necessary and possible causing delay or lag
+    #define MAX_COMETS      100 // To prevent the device from saving more spots than necessary and possibly causing delay or lag
 
     #define POWER_LIMIT_MW  (7.5 * 24 * 1000) // Expects at least a 24V 7.5A supply
 
@@ -38,6 +38,15 @@
     #define LED_TYPE        WS2812B // Almost no clue what this means, the type of leds being used or something
     #define COLOR_ORDER     RGB // Currently affects nothing
 
-    #define ARRAY_1        {1,2,3,4,5,6,7,8} // an array of ports you want to be checked for snmp data
-    #define NUMOFPORTS1    2 // how many ports you defined above, idk how else to do this
+    #define ARRAY_1         {1,2} // an array of ports you want to be checked for snmp data
+    #define NUMOFPORTS1     2 // how many ports you defined above, idk how else to do this
+
+    #define ARRAY_2         {3,4}
+    #define NUMOFPORTS2     2
+
+    #define ARRAY_3         {5,6}
+    #define NUMOFPORTS3     2
+
+    #define ARRAY_4         {7,8}
+    #define NUMOFPORTS4     2
 #endif

@@ -14,6 +14,10 @@ You will need to add your wifi SSID and password, as well as the IP address of y
 #include <globals.h>
 #include <mathhandler.h>
 
+#if LABLIGHTS
+#include <lablights.h>
+#endif
+
 // Your WiFi info 
 const char *ssid = "ITLAB";
 const char *password = "letmeinnow";
@@ -39,10 +43,15 @@ const char *oidUptime = ".1.3.6.1.2.1.1.3.0";        // This OID gets us the upt
 
 unsigned int responseInOctets[numberOfPorts] = {0};  // This will create a resizable array as big as the numberOfPorts we want to poll established above.
 unsigned int responseOutOctets[numberOfPorts] = {0}; // We need arrays for in and out. 
+
 int lastOutOctets1[numberOfPorts] = {0};     // The 'response' arrays will store the data we get from our query, and the 'last' arrays store the value
 int lastInOctets1[numberOfPorts] = {0};      // from the last time it was polled so we can compare against.
-int lastOutOctets2[numberOfPorts] = {0};
+int lastOutOctets2[numberOfPorts] = {0};     // Need an IN and OUT for each strip
 int lastInOctets2[numberOfPorts] = {0};
+int lastOutOctets3[numberOfPorts] = {0};
+int lastInOctets3[numberOfPorts] = {0};
+int lastOutOctets4[numberOfPorts] = {0};
+int lastInOctets4[numberOfPorts] = {0};
 
 const char* oidInOctets1[Array1Count];  // We will need to populate this array with the OID strings for the ifInOctets (and out) for each of our ports
 const char* oidOutOctets1[Array1Count]; // and we have to do that in setup
@@ -57,12 +66,20 @@ unsigned int lastUptime = 0;
 int in1Total = 0;
 int out1Total = 0;
 int arr1Totals[2] = {};
-int lastArr1Totals[2] = {};
 
+// We'll leave these established as it wont really affect speed, and would cause issues to try to IF define them.
+// Need a block for each strip
 int in2Total = 0;
 int out2Total = 0;
 int arr2Totals[2] = {};
-int lastArr2Totals[2] = {};
+
+int in3Total = 0;
+int out3Total = 0;
+int arr3Totals[2] = {};
+
+int in4Total = 0;
+int out4Total = 0;
+int arr4Totals[2] = {};
 
 // SNMP Objects
 WiFiUDP udp;                                           // UDP object used to send and receive packets
@@ -120,8 +137,13 @@ void snmpLoop(int Array[], int arrayCount, int arrayIndex){ // the port array, t
 void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
   in1Total = 0; // Reset all Total variables so that the current data isn't mixing with the last poll.
   in2Total = 0;
+  in3Total = 0;
+  in4Total = 0;
+
   out1Total = 0;
   out2Total = 0;
+  out3Total = 0;
+  out4Total = 0;
 
   for (int i = 0; i < arrayCount; i++) {
     int o = Array[i]; // i counts from 0 to the maximum in our array - 1, so Array[i] gives us each number in the array we pass to the function.
@@ -144,6 +166,16 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
       Serial.print(subT);
       in2Total += subT;
       lastInOctets2[o] = responseInOctets[o];
+    }else if (arrayIndex == 3){ // repeat for strip 2
+      subT = responseInOctets[o] - lastInOctets3[o];
+      Serial.print(subT);
+      in3Total += subT;
+      lastInOctets3[o] = responseInOctets[o];
+    }else if (arrayIndex == 4){ // repeat for strip 2
+      subT = responseInOctets[o] - lastInOctets4[o];
+      Serial.print(subT);
+      in4Total += subT;
+      lastInOctets4[o] = responseInOctets[o];
     }
   }
   // Just to get a line between IN and OUT
@@ -165,6 +197,16 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
       Serial.print(subT);
       out2Total += subT;
       lastOutOctets2[o] = responseOutOctets[o];
+    }else if (arrayIndex == 3){
+      subT = responseOutOctets[o]-lastOutOctets3[o];
+      Serial.print(subT);
+      out3Total += subT;
+      lastOutOctets3[o] = responseOutOctets[o];
+    }else if (arrayIndex == 4){
+      subT = responseOutOctets[o]-lastOutOctets4[o];
+      Serial.print(subT);
+      out4Total += subT;
+      lastOutOctets4[o] = responseOutOctets[o];
     }
   }
   Serial.println();
@@ -177,6 +219,12 @@ void setTotals(int arrayIndex){ // This is where we actually set the variables t
   }else if (arrayIndex == 2){ // Repeat for strip 2
     arr2Totals[0] = in2Total;
     arr2Totals[1] = out2Total;
+  }else if (arrayIndex == 3){ // Repeat for strip 2
+    arr3Totals[0] = in3Total;
+    arr3Totals[1] = out3Total;
+  }else if (arrayIndex == 4){ // Repeat for strip 2
+    arr4Totals[0] = in4Total;
+    arr4Totals[1] = out4Total;
   }
 }
 
@@ -229,14 +277,20 @@ void printVariableFooter()
   lastUptime = currentTime;
   Serial.println();
   // Some debugging information
-  Serial.printf("Strip 1 IN Averaged: %i", arr1Totals[0]);
+  Serial.printf("Strip 1 Averaged, IN: %i  OUT: %i", arr1Totals[0], arr1Totals[1]);
   Serial.println();
-  Serial.printf("Strip 1 OUT Averaged: %i", arr1Totals[1]);
-  Serial.println();
-  Serial.printf("Strip 2 IN Averaged: %i", arr2Totals[0]);
-  Serial.println();
-  Serial.printf("Strip 2 OUT Averaged: %i", arr2Totals[1]);
-  Serial.println();
+  if (Strip2){
+    Serial.printf("Strip 2 Averaged, IN: %i  OUT: %i", arr2Totals[0], arr2Totals[1]);
+    Serial.println();
+  }
+  if (Strip3){
+    Serial.printf("Strip 3 Averaged, IN: %i  OUT: %i", arr3Totals[0], arr3Totals[1]);
+    Serial.println();
+  }
+  if (Strip4){
+    Serial.printf("Strip 4 Averaged, IN: %i  OUT: %i", arr4Totals[0], arr4Totals[1]);
+    Serial.println();
+  }
 }
 
 
