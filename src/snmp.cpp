@@ -118,33 +118,38 @@ void snmpLoop(int Array[], int arrayCount, int arrayIndex){ // the port array, t
 }
 
 void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
-  in1Total = 0;
+  in1Total = 0; // Reset all Total variables so that the current data isn't mixing with the last poll.
   in2Total = 0;
   out1Total = 0;
   out2Total = 0;
 
   for (int i = 0; i < arrayCount; i++) {
-    // Verify that Array contains valid indices
-    int o = Array[i];
+    int o = Array[i]; // i counts from 0 to the maximum in our array - 1, so Array[i] gives us each number in the array we pass to the function.
 
-    int subT;
+    int subT; // to store the difference between response and last response
 
     // Debugging: Print the values to help identify issues
+    // Some data displays as negative when first uploading, but it balances out after you give it a few polls
+
+    // Prints and sets the ports IN data:
     Serial.println();
     Serial.printf("Port %i IN: ", o);
-    if (arrayIndex == 1){
-      subT = responseInOctets[o] - lastInOctets1[o];
+    if (arrayIndex == 1){ // If on the first strip
+      subT = responseInOctets[o] - lastInOctets1[o]; // We only need lastInOctets variables to be exclusive, response is changed each time so we don't need a response1, 2, etc.
       Serial.print(subT);
-      in1Total += subT;
-      lastInOctets1[o] = responseInOctets[o];
-    }else if (arrayIndex == 2){
+      in1Total += subT; // add the difference to the total, this is what we actually pull from in our main.cpp
+      lastInOctets1[o] = responseInOctets[o]; // set the last to the response, after this is where response can be redefined and it wont matter.
+    }else if (arrayIndex == 2){ // repeat for strip 2
       subT = responseInOctets[o] - lastInOctets2[o];
       Serial.print(subT);
       in2Total += subT;
       lastInOctets2[o] = responseInOctets[o];
     }
   }
+  // Just to get a line between IN and OUT
   Serial.println();
+
+  // Prints and sets the ports OUT data:
   for (int i = 0; i < arrayCount; ++i) {
     int o = Array[i];
     int subT;
@@ -165,17 +170,17 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
   Serial.println();
 }
 
-void setTotals(int arrayIndex){
+void setTotals(int arrayIndex){ // This is where we actually set the variables to pull from in our main.
   if (arrayIndex == 1){
-    arr1Totals[0] = in1Total;
+    arr1Totals[0] = in1Total; // We use arr1Totals for the entire strip 1, IN will be at index 0, and OUT will be at index 1.
     arr1Totals[1] = out1Total;
-  }else if (arrayIndex == 2){
+  }else if (arrayIndex == 2){ // Repeat for strip 2
     arr2Totals[0] = in2Total;
     arr2Totals[1] = out2Total;
   }
 }
 
-void getInSNMP(int Array[], int arrayCount)
+void getInSNMP(int Array[], int arrayCount) // This is a lot of stuff I don't understand, so just research snmp coding and you might understand.
 {
   for (int i = 0; i < arrayCount; ++i) {
   int o = Array[i];
@@ -190,7 +195,7 @@ void getInSNMP(int Array[], int arrayCount)
   snmpRequest.clearOIDList();
 }
 
-void getOutSNMP(int Array[], int arrayCount)
+void getOutSNMP(int Array[], int arrayCount) // Again I have no clue, this was part of the sample code in the library I used.
 {
   for (int i = 0; i < arrayCount; ++i) {
   int o = Array[i];
@@ -222,6 +227,15 @@ void printVariableFooter()
   Serial.println(" -----");
   // Update last samples
   lastUptime = currentTime;
+  Serial.println();
+  // Some debugging information
+  Serial.printf("Strip 1 IN Averaged: %i", arr1Totals[0]);
+  Serial.println();
+  Serial.printf("Strip 1 OUT Averaged: %i", arr1Totals[1]);
+  Serial.println();
+  Serial.printf("Strip 2 IN Averaged: %i", arr2Totals[0]);
+  Serial.println();
+  Serial.printf("Strip 2 OUT Averaged: %i", arr2Totals[1]);
   Serial.println();
 }
 

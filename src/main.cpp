@@ -86,11 +86,12 @@ void loop() {
       pollStart += pollInterval; // this prevents drift in the delays
 
       printVariableHeader(); // Another func from snmp.cpp, prints debugging data in serial output
-
-      // This block establishes the establishment of all variables for strip 1 pulses
+      // This block establishes all variables for strip 1 pulses
+      int InAvg; 
+      int OutAvg;
       snmpLoop(ArrayTest, 2, 1); // snmpLoop() can be found in snmp.cpp to see functionality
-      int InAvg = arr1Totals[0];
-      int OutAvg = arr1Totals[1];
+      InAvg = arr1Totals[0];
+      OutAvg = arr1Totals[1];
       pulsesToSendReverse = calcSNMPPulses(InAvg); // The IN of the switch, we want the comet travelling from the end of the strip, back towards the device.
       reverseColor = calcPulseColor2(InAvg);
       inPulseInterval = pollTiming/pulsesToSendReverse * 1000; // We do this to spread the pulses evenly over 10 seconds, if we want to send 3 pulses it will send a pulse every 3333 milliseconds (3.3 seconds)
@@ -106,6 +107,8 @@ void loop() {
         snmpLoop(ArrayTest2, 2, 2);
         InAvg2 = arr2Totals[0];
         OutAvg2 = arr2Totals[1];
+        InAvg2 = 999999;
+        OutAvg2 = 999999;
         pulsesToSendReverse2 = calcSNMPPulses(InAvg2);
         reverseColor2 = calcPulseColor2(InAvg2);
         inPulseInterval2 = pollTiming/pulsesToSendReverse2 * 1000;
