@@ -90,7 +90,7 @@ void loop() {
       int InAvg; 
       int OutAvg;
       snmpLoop(ArrayTest, 2, 1); // snmpLoop() can be found in snmp.cpp to see functionality
-      InAvg = arr1Totals[0];
+      InAvg = arr1Totals[0]; // arr1Totals is a global variable found in snmp.cpp and is set within the snmpLoop() function.
       OutAvg = arr1Totals[1];
       pulsesToSendReverse = calcSNMPPulses(InAvg); // The IN of the switch, we want the comet travelling from the end of the strip, back towards the device.
       reverseColor = calcPulseColor2(InAvg);
