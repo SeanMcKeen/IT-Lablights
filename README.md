@@ -10,8 +10,7 @@
 <h2>Some Important Functions</h2>
 <div class="box">
   <pre><h2>snmp.h</h2><b>void SNMPsetup(int Array[])</b> -- <i>Sets up a list of ports that you will be pulling data from.</i>
-<b>int snmpInLoop(int Array[])</b> -- <i>Returns the Average difference in data since the last poll coming IN to the switch.</i>
-<b>int snmpOutLoop(int Array[])</b> -- <i>Returns the Average difference in data since the last poll coming OUT of the switch.</i>
+<b>void snmpLoop(int Array[], int arrayCount, int arrayIndex)</b> -- <i>Calculates the average difference in data since the last poll coming IN and OUT of the switch.</i>
 <b>void printVariableHeader()</b> -- <i>Prints switch name & uptime to serial monitor.</i>
 <b>void printVariableFooter()</b> -- <i>Prints elapsed time between polls and summary of data.</i>
 
