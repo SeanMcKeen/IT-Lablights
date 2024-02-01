@@ -96,10 +96,11 @@ void SNMPsetup(int Array[], int arrayCount)
     int o = Array[i];
     std::string oidInStr = ".1.3.6.1.2.1.2.2.1.10." + std::to_string(o); // create the list of inOids 
     std::string oidOutStr = ".1.3.6.1.2.1.2.2.1.16." + std::to_string(o); // create the list of outOids
+    // why is there a 1 in these? oidInOctets1?  Mr D
     oidInOctets1[o] = oidInStr.c_str();
     oidOutOctets1[o] = oidOutStr.c_str();
     callbackInOctets[o]= snmp.addCounter32Handler(Switch, oidInOctets1[o], &responseInOctets[o]); // create callbacks array for the OID
-    callbackOutOctets[o]= snmp.addCounter32Handler(Switch, oidOutOctets1[o], &responseInOctets[o]); // create callbacks array for the OID
+    callbackOutOctets[o]= snmp.addCounter32Handler(Switch, oidOutOctets1[o], &responseOutOctets[o]); // create callbacks array for the OID
   }
   callbackSysName = snmp.addStringHandler(Switch, oidSysName, &sysNameResponse);
   callbackUptime = snmp.addTimestampHandler(Switch, oidUptime, &uptime);
@@ -118,52 +119,48 @@ void snmpLoop(int Array[], int arrayCount, int arrayIndex){ // the port array, t
 
 void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
   in1Total = 0;
+  in2Total = 0;
   out1Total = 0;
-
-  int* variableToUseIN;
-  int* variableToUseOUT;
-
-  int (*lastInOctets)[numberOfPorts];
-  int (*lastOutOctets)[numberOfPorts];
-  
-
-  if (arrayIndex == 1) {
-    variableToUseIN = &in1Total;
-    lastInOctets = &lastInOctets1;
-    variableToUseOUT = &out1Total;
-    lastOutOctets = &lastOutOctets1;
-  }else if(arrayIndex == 2){
-    variableToUseIN = &in2Total;
-    lastInOctets = &lastInOctets2;
-    variableToUseOUT = &out2Total;
-    lastOutOctets = &lastOutOctets2;
-  }
+  out2Total = 0;
 
   for (int i = 0; i < arrayCount; i++) {
     // Verify that Array contains valid indices
     int o = Array[i];
 
-    int subT = responseInOctets[o] - *lastInOctets[o];
+    int subT;
 
     // Debugging: Print the values to help identify issues
     Serial.println();
     Serial.printf("Port %i IN: ", o);
-    Serial.print(subT);
-
-    // Verify pointers and perform calculations
-    *variableToUseIN += subT;
-    *lastInOctets[o] = responseInOctets[o];
+    if (arrayIndex == 1){
+      subT = responseInOctets[o] - lastInOctets1[o];
+      Serial.print(subT);
+      in1Total += subT;
+      lastInOctets1[o] = responseInOctets[o];
+    }else if (arrayIndex == 2){
+      subT = responseInOctets[o] - lastInOctets2[o];
+      Serial.print(subT);
+      in2Total += subT;
+      lastInOctets2[o] = responseInOctets[o];
+    }
   }
-
   Serial.println();
   for (int i = 0; i < arrayCount; ++i) {
     int o = Array[i];
-    int subT = responseInOctets[o]-*lastInOctets[o];
+    int subT;
     Serial.println();
     Serial.printf("Port %i OUT: ", o);
-    Serial.print(subT);
-    *variableToUseOUT += subT;
-    *lastOutOctets[o] = responseOutOctets[o];
+    if (arrayIndex == 1){
+      subT = responseOutOctets[o]-lastOutOctets1[o];
+      Serial.print(subT);
+      out1Total += subT;
+      lastOutOctets1[o] = responseOutOctets[o];
+    }else if (arrayIndex == 2){
+      subT = responseOutOctets[o]-lastOutOctets2[o];
+      Serial.print(subT);
+      out2Total += subT;
+      lastOutOctets2[o] = responseOutOctets[o];
+    }
   }
   Serial.println();
 }
