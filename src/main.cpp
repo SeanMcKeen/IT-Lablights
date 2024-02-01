@@ -107,8 +107,6 @@ void loop() {
         snmpLoop(ArrayTest2, 2, 2);
         InAvg2 = arr2Totals[0];
         OutAvg2 = arr2Totals[1];
-        InAvg2 = 999999;
-        OutAvg2 = 999999;
         pulsesToSendReverse2 = calcSNMPPulses(InAvg2);
         reverseColor2 = calcPulseColor2(InAvg2);
         inPulseInterval2 = pollTiming/pulsesToSendReverse2 * 1000;
