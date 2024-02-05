@@ -176,16 +176,16 @@ void loop() {
     // EACH pulse needs its own set of variables if you want it to be independent
     // Essentially we want each strip handling an array, since we have 4 strips, it would be appropriate to have 4 arrays.
     sendPulse(forwardColor, 1, &pulsesSentForward, pulsesToSendForward, &previousPulseMillis, outPulseInterval, 1); // call a pulse forward/OUT
-    sendPulse(reverseColor, 1, &pulsesSentReverse, pulsesToSendReverse, &previousPulseMillis3, inPulseInterval, 0); // call a pulse reverse/IN
+    // sendPulse(reverseColor, 1, &pulsesSentReverse, pulsesToSendReverse, &previousPulseMillis3, inPulseInterval, 0); // call a pulse reverse/IN
 
     sendPulse(forwardColor2, 2, &pulsesSentForward2, pulsesToSendForward2, &previousPulseMillis2, outPulseInterval2, 1);
-    sendPulse(reverseColor2, 2, &pulsesSentReverse2, pulsesToSendReverse2, &previousPulseMillis4, inPulseInterval2, 0);
+    // sendPulse(reverseColor2, 2, &pulsesSentReverse2, pulsesToSendReverse2, &previousPulseMillis4, inPulseInterval2, 0);
 
     sendPulse(forwardColor3, 3, &pulsesSentForward3, pulsesToSendForward3, &previousPulseMillis5, outPulseInterval3, 1);
-    sendPulse(reverseColor3, 3, &pulsesSentReverse3, pulsesToSendReverse3, &previousPulseMillis6, inPulseInterval3, 0);
+    // sendPulse(reverseColor3, 3, &pulsesSentReverse3, pulsesToSendReverse3, &previousPulseMillis6, inPulseInterval3, 0);
 
     sendPulse(forwardColor4, 4, &pulsesSentForward4, pulsesToSendForward4, &previousPulseMillis7, outPulseInterval4, 1);
-    sendPulse(reverseColor4, 4, &pulsesSentReverse4, pulsesToSendReverse4, &previousPulseMillis8, inPulseInterval4, 0);
+    // sendPulse(reverseColor4, 4, &pulsesSentReverse4, pulsesToSendReverse4, &previousPulseMillis8, inPulseInterval4, 0);
   }
 }
 

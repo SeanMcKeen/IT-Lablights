@@ -6,11 +6,17 @@
 const int TotalLeds = NUM_LEDS + NUM_LEDS2 + NUM_LEDS3 + NUM_LEDS4 + NUM_CHANNELS;
 CRGB leds[TotalLeds];
 
-int currentlyLitLedsForward[MAX_COMETS];
-int currentlyLitLedsReverse[MAX_COMETS];
+int currentlyLitLedsForward[TotalLeds];
+int currentlyLitLedsReverse[TotalLeds];
 
-CRGB forwardColors[MAX_COMETS];
-CRGB reverseColors[MAX_COMETS];
+CRGB forwardColors[TotalLeds];
+CRGB reverseColors[TotalLeds];
+
+double fadeForwardAmount[TotalLeds];
+double fadeReverseAmount[TotalLeds];
+
+int forwardPulseLengths[TotalLeds];
+int reversePulseLengths[TotalLeds];
 
 #if NUM_CHANNELS == 2
   bool Strip2 = true;
@@ -42,7 +48,7 @@ int LedStart4 = LedSplit3+1;
 unsigned long previousMillis = 0;
 const long interval = SPEED;
 
-void fadeAll(); // Must be defined up here so it can be called before the actual definition
+void fadePulse(int comet, int trailLength, bool reverse); // Must be defined up here so it can be called before the actual definition
 
 void initFastLED() {
   // According to FastLed documentation, we can do this a few ways, with multiple arrays, or with one main array with different offsets
@@ -67,13 +73,13 @@ void litArray() {
     previousMillis = currentMillis; // set previous to current so we can check the time passed again in the next frame
 
     // Fade all LEDs, this is to give each LED a trail effect, and must be called each frame
-    fadeAll();
-
+    // fill_solid(leds, TotalLeds, CRGB::Black);
     // Handle the forward pulse
-    for (int i = 0; i < MAX_COMETS; i++) { // creates a pulse as long as there aren't more than the maximum comets/pulses
-      //strip 1
+    for (int i = 0; i < TotalLeds; i++) { // creates a pulse as long as there aren't more than the maximum comets/pulses 
       if (currentlyLitLedsForward[i] >= 0 && currentlyLitLedsForward[i] <= TotalLeds) { // We make sure the pulse fits within the bounds of the strip (currentlyLitLedsForward[1] would return the position of the first comet in the array EX: 80 would be LED 80/100 if it's a 100 LED strip)
         leds[currentlyLitLedsForward[i]] += forwardColors[i];
+
+        fadePulse(currentlyLitLedsForward[i], forwardPulseLengths[i], false);
         // Set the LED to the color passed to the func, leds[] is the array used to send data to a specific LED, to send color data to LED 100 we would use leds[100] = COLOR
         currentlyLitLedsForward[i]++; // Move the comet forward
 
@@ -84,9 +90,11 @@ void litArray() {
     }
 
     // Handle the reverse pulse
-    for (int i = 0; i < MAX_COMETS; i++) { // Does the same exact thing as forwardpulse function above, but in reverse
+    for (int i = 0; i < TotalLeds; i++) { // Does the same exact thing as forwardpulse function above, but in reverse
       if (currentlyLitLedsReverse[i] >= 0 && currentlyLitLedsReverse[i] <= TotalLeds) {    
         leds[currentlyLitLedsReverse[i]] += reverseColors[i];
+
+        fadePulse(currentlyLitLedsReverse[i], reversePulseLengths[i], true);
         // Set the LED to the color passed to the func
         currentlyLitLedsReverse[i]--; // Move the comet backward
 
@@ -96,51 +104,67 @@ void litArray() {
         }
       }
     }
-
     FastLED.show(); // This is what actually makes the data we defined above appear on the strip.
   }
 }
 
-void fadeAll() {
-  // Fade out all LEDs
-  for (int i = 0; i < TotalLeds; i++) { // We call fade out BEFORE establishing the pulse so that only the trail is being faded and not the head of the pulse.
-  // Fades the color by an equal amount, that way the color appears the same while becomming dimmer. Note: do NOT use brightness to accomplish this as brightness is global to the entire strip and cannot be used for a single pulse.
-    if (leds[i].r > 0) leds[i].r -= leds[i].r*.33;
-    if (leds[i].g > 0) leds[i].g -= leds[i].g*.33;
-    if (leds[i].b > 0) leds[i].b -= leds[i].b*.33;
+void fadePulse(int comet, int trailLength, bool reverse) {
+  trailLength = 5;
+  CRGB originColor = leds[comet];
+  double fadeAmount = 0.2;  // Adjust the fade amount as needed
+
+  if (!reverse) {
+    for (int i = 1; i <= trailLength; i++) {
+      double fadeFraction = (double)i / trailLength;
+      leds[comet - i] = originColor.fadeToBlackBy(fadeFraction * 255);
+    }
+  } else {
+    for (int i = 1; i <= trailLength; i++) {
+      double fadeFraction = (double)i / trailLength;
+      leds[comet - i] = originColor.fadeToBlackBy(fadeFraction * 255);
+    }
   }
 }
 
+
 void forwardEvent(CRGB color, int strip) { // This can be called to start a new pulse originating from the beginning of the strip, with the desired color
   // Find the first available position in currentlyLitLedsForward and set it to 0
-  for (int i = 0; i < MAX_COMETS; i++) {
+  for (int i = 0; i < TotalLeds; i++) {
     // Find the first available comet that's ready to be shot.
     if (strip == 1) {
       if (currentlyLitLedsForward[i] == -1) {
         currentlyLitLedsForward[i] = 0; // We set it to 0 as our logic makes it so anything within the range of the strip will constantly be moved. -1 is not within the range so it is ignored until redefined here.
-
+        
         forwardColors[i] = color; // This is how we save what comets have what color values.
+        forwardPulseLengths[i] = 5;
+        fadeForwardAmount[i] = 0.2;
         break;
       }
     }else if (strip == 2){
       if (currentlyLitLedsForward[i] == -1) {
         currentlyLitLedsForward[i] = LedSplit1 + 1;
 
-        forwardColors[i] = color;
+        forwardColors[i] = color; // This is how we save what comets have what color values.
+        forwardPulseLengths[i] = 5;
+        fadeForwardAmount[i] = 0.2;
         break;
       }
     }else if (strip == 3){
       if (currentlyLitLedsForward[i] == -1) {
         currentlyLitLedsForward[i] = LedSplit2 + 1;
 
-        forwardColors[i] = color;
+        forwardColors[i] = color; // This is how we save what comets have what color values.
+        forwardPulseLengths[i] = 5;
+        fadeForwardAmount[i] = 0.2;
         break;
       }
     }else if (strip == 4){
       if (currentlyLitLedsForward[i] == -1) {
         currentlyLitLedsForward[i] = LedSplit3 + 1;
 
-        forwardColors[i] = color;
+        forwardColors[i] = color; // This is how we save what comets have what color values.
+        forwardPulseLengths[i] = 5;
+        fadeForwardAmount[i] = 0.2;
         break;
       }
     }
@@ -149,12 +173,14 @@ void forwardEvent(CRGB color, int strip) { // This can be called to start a new 
 
 void reverseEvent(CRGB color, int strip) { // This is the exact same as forwardEvent() but in reverse.
   // Find the first available position in currentlyLitLedsReverse and set it to NUM_LEDS - 1
-  for (int i = 0; i < MAX_COMETS; i++) {
+  for (int i = 0; i < TotalLeds; i++) {
     if (strip == 1) {
       if (currentlyLitLedsReverse[i] == -1) {
         currentlyLitLedsReverse[i] = LedSplit1 - 1;
 
         reverseColors[i] = color;
+        reversePulseLengths[i] = 2;
+        fadeReverseAmount[i] = 0.5;
         break;
       }
     }else if (strip == 2) {
@@ -162,6 +188,8 @@ void reverseEvent(CRGB color, int strip) { // This is the exact same as forwardE
         currentlyLitLedsReverse[i] = LedSplit2 - 1;
 
         reverseColors[i] = color;
+        reversePulseLengths[i] = 2;
+        fadeReverseAmount[i] = 0.5;
         break;
       }
     }else if (strip == 3) {
@@ -169,6 +197,8 @@ void reverseEvent(CRGB color, int strip) { // This is the exact same as forwardE
         currentlyLitLedsReverse[i] = LedSplit3 - 1;
 
         reverseColors[i] = color;
+        reversePulseLengths[i] = 2;
+        fadeReverseAmount[i] = 0.5;
         break;
       }
     }else if (strip == 4) {
@@ -176,6 +206,8 @@ void reverseEvent(CRGB color, int strip) { // This is the exact same as forwardE
         currentlyLitLedsReverse[i] = TotalLeds - 1;
 
         reverseColors[i] = color;
+        reversePulseLengths[i] = 2;
+        fadeReverseAmount[i] = 0.5;
         break;
       }
     }
