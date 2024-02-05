@@ -101,7 +101,7 @@ void litArray() {
   }
 }
 
-void fadeAll() {
+void fadeAll() { // This is a global fade, there's no way to individually fade pulses correctly.
   // Fade out all LEDs
   for (int i = 0; i < TotalLeds; i++) { // We call fade out BEFORE establishing the pulse so that only the trail is being faded and not the head of the pulse.
   // Fades the color by an equal amount, that way the color appears the same while becomming dimmer. Note: do NOT use brightness to accomplish this as brightness is global to the entire strip and cannot be used for a single pulse.
