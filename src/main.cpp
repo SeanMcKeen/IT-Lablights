@@ -6,7 +6,7 @@
 
 // Main Code Section -- Executed no matter what
 
-// Defining local variables (These are set to 0 as they are redefined later in the code)
+// Defining local variables (These are set to 0 as they are redefined later in the code) (Should convert to arrays)
 int pollInterval = POLL_DELAY;
 int pollTiming = pollInterval/1000;
 unsigned long pollStart = 0;
