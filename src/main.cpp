@@ -12,59 +12,28 @@ int pollTiming = pollInterval/1000;
 unsigned long pollStart = 0;
 unsigned long intervalBetweenPolls = 0;
 
+// Thank you to the person in reddit for suggesting I use arrays!!
 // PulseInterval Variables (Must have a forward and reverse for each strip)
-unsigned long inPulseInterval = 0;
-unsigned long inPulseInterval2 = 0;
-unsigned long inPulseInterval3 = 0;
-unsigned long inPulseInterval4 = 0;
+unsigned long inPulseInterval[NUM_CHANNELS] = {};
 
-unsigned long outPulseInterval = 0;
-unsigned long outPulseInterval2 = 0;
-unsigned long outPulseInterval3 = 0;
-unsigned long outPulseInterval4 = 0;
+unsigned long outPulseInterval[NUM_CHANNELS] = {};
 
 //We need a previous pulse for each strips' forward and backward, AKA 2*NUM_CHANNELS
-unsigned long previousPulseMillis = 0;
-unsigned long previousPulseMillis2 = 0;
-unsigned long previousPulseMillis3 = 0;
-unsigned long previousPulseMillis4 = 0;
-unsigned long previousPulseMillis5 = 0;
-unsigned long previousPulseMillis6 = 0;
-unsigned long previousPulseMillis7 = 0;
-unsigned long previousPulseMillis8 = 0;
+unsigned long previousPulseMillis[NUM_CHANNELS*2] = {};
 
 // PulsesToSend Variables (Must have a forward and reverse for each strip)
-unsigned long pulsesToSendForward = 0;
-unsigned long pulsesToSendForward2 = 0;
-unsigned long pulsesToSendForward3 = 0;
-unsigned long pulsesToSendForward4 = 0;
-
-unsigned long pulsesToSendReverse = 0;
-unsigned long pulsesToSendReverse2 = 0;
-unsigned long pulsesToSendReverse3 = 0;
-unsigned long pulsesToSendReverse4 = 0;
-
+int pulsesToSendForward[NUM_CHANNELS] = {};
+int pulsesToSendReverse[NUM_CHANNELS] = {};
 
 // PulsesSent Variables (Must have a forward and reverse for each strip)
-unsigned int pulsesSentForward = 0; // pulses sent forward on strip 1
-unsigned int pulsesSentForward2 = 0; // pulses sent forward on strip 2 
-unsigned int pulsesSentForward3 = 0;
-unsigned int pulsesSentForward4 = 0;
+int pulsesSentForward[NUM_CHANNELS] = {};
+int pulsesSentReverse[NUM_CHANNELS] = {};
 
-unsigned int pulsesSentReverse = 0; // pulses sent reverse on strip 1 
-unsigned int pulsesSentReverse2 = 0; // pulses sent reverse on strip 2 
-unsigned int pulsesSentReverse3 = 0;
-unsigned int pulsesSentReverse4 = 0;
+CRGB forwardColor[] = {CRGB::Blue};
+CRGB reverseColor[] = {CRGB::Blue};
 
-CRGB forwardColor = CRGB::Blue;
-CRGB forwardColor2 = CRGB::Blue;
-CRGB forwardColor3 = CRGB::Blue;
-CRGB forwardColor4 = CRGB::Blue;
-
-CRGB reverseColor = CRGB::Blue;
-CRGB reverseColor2 = CRGB::Blue;
-CRGB reverseColor3 = CRGB::Blue;
-CRGB reverseColor4 = CRGB::Blue;
+int InAvg[NUM_CHANNELS] = {};
+int OutAvg[NUM_CHANNELS] = {};
 
 #if LABLIGHTS // Here's where we include Lablights ONLY header files, saves space and time in case we want to build a different project
 #include <enablewifi.h>
@@ -80,7 +49,7 @@ int Array3[] = ARRAY_3;
 int Array4[] = ARRAY_4;
 
 // define functions
-void sendPulse(CRGB color, int strip, unsigned int *pulsesSentVar, int pulsesMaxSend, unsigned long *prevMillisOfPulse, unsigned long interval, int direction);
+void sendPulse(CRGB color, int strip, int *PulsesSentVar, int pulsesMaxSend, unsigned long *prevMillisOfPulse, unsigned long interval, int direction);
 
 void setup() { // Main Setup
   if (PROJECT_NAME == "Lablights") { // Again, setup exclusive to Lablights
@@ -97,7 +66,6 @@ void setup() { // Main Setup
 // Main loop
 void loop() {
   if (PROJECT_NAME == "Lablights") {
-    litArray();
     callLoop();
     intervalBetweenPolls = millis() - pollStart;
     if (intervalBetweenPolls >= pollInterval) {
@@ -105,101 +73,62 @@ void loop() {
 
       printVariableHeader(); // Another func from snmp.cpp, prints debugging data in serial output
       // This block establishes all variables for strip 1 pulses
-      int InAvg; 
-      int OutAvg;
-      snmpLoop(Array1, 2, 1); // snmpLoop() can be found in snmp.cpp to see functionality
-      InAvg = arr1Totals[0]; // arr1Totals is a global variable found in snmp.cpp and is set within the snmpLoop() function.
-      OutAvg = arr1Totals[1];
-      pulsesToSendReverse = calcSNMPPulses(InAvg); // The IN of the switch, we want the comet travelling from the end of the strip, back towards the device.
-      reverseColor = calcPulseColor2(InAvg);
-      inPulseInterval = pollTiming/pulsesToSendReverse * 1000; // We do this to spread the pulses evenly over 10 seconds, if we want to send 3 pulses it will send a pulse every 3333 milliseconds (3.3 seconds)
-      pulsesToSendForward = calcSNMPPulses(OutAvg); // The OUT of the switch, we want the comet travelling from the beginning of the strip, away from the device.
-      forwardColor = calcPulseColor(OutAvg);
-      outPulseInterval = pollTiming/pulsesToSendForward * 1000;
+      for (int x = 0; x < NUM_CHANNELS; x++){
+        switch (x)
+        {
+        case 0:
+          snmpLoop(Array1, sizeof(Array1), x);
+          break;
+        case 1:
+          snmpLoop(Array2, sizeof(Array2), x);
+          break;
+        case 2:
+          snmpLoop(Array3, sizeof(Array3), x);
+          break;
+        case 3:
+          snmpLoop(Array4, sizeof(Array4), x);
+          break;
+        }
+        InAvg[x] = arrINTotals[x];
+        OutAvg[x] = arrOUTTotals[x];
+        pulsesToSendForward[x] = calcSNMPPulses(OutAvg[x]);
+        forwardColor[x] = calcPulseColor(OutAvg[x]);
+        outPulseInterval[x] = (pollTiming/pulsesToSendForward[x] * 1000);
 
-      // This block establishes all variables for strip 2 pulses
+        pulsesToSendReverse[x] = calcSNMPPulses(InAvg[x]);
+        reverseColor[x] = calcPulseColor2(InAvg[x]);
+        inPulseInterval[x] = (pollTiming/pulsesToSendReverse[x] * 1000);
 
-      int InAvg2 = 0;
-      int OutAvg2 = 0;
-      if (Strip2){
-        snmpLoop(Array2, 2, 2);
-        InAvg2 = arr2Totals[0];
-        OutAvg2 = arr2Totals[1];
-        pulsesToSendReverse2 = calcSNMPPulses(InAvg2);
-        reverseColor2 = calcPulseColor2(InAvg2);
-        inPulseInterval2 = pollTiming/pulsesToSendReverse2 * 1000;
-        pulsesToSendForward2 = calcSNMPPulses(OutAvg2);
-        forwardColor2 = calcPulseColor(OutAvg2);
-        outPulseInterval2 = pollTiming/pulsesToSendForward2 * 1000;
-      }
-
-      int InAvg3 = 0;
-      int OutAvg3 = 0;
-      if (Strip3){
-        snmpLoop(Array3, 2, 3);
-        InAvg3 = arr3Totals[0];
-        OutAvg3 = arr3Totals[1];
-        pulsesToSendReverse3 = calcSNMPPulses(InAvg3);
-        reverseColor3 = calcPulseColor2(InAvg3);
-        inPulseInterval3 = pollTiming/pulsesToSendReverse3 * 1000;
-        pulsesToSendForward3 = calcSNMPPulses(OutAvg3);
-        forwardColor3 = calcPulseColor(OutAvg3);
-        outPulseInterval3 = pollTiming/pulsesToSendForward3 * 1000;
-      }
-
-      int InAvg4 = 0;
-      int OutAvg4 = 0;
-      if (Strip4){
-        snmpLoop(Array4, 2, 4);
-        InAvg4 = arr4Totals[0];
-        OutAvg4 = arr4Totals[1];
-        pulsesToSendReverse4 = calcSNMPPulses(InAvg4);
-        reverseColor4 = calcPulseColor2(InAvg4);
-        inPulseInterval4 = pollTiming/pulsesToSendReverse4 * 1000;
-        pulsesToSendForward4 = calcSNMPPulses(OutAvg4);
-        forwardColor4 = calcPulseColor(OutAvg4);
-        outPulseInterval4 = pollTiming/pulsesToSendForward4 * 1000;
+        pulsesSentForward[x] = 0;
+        pulsesSentReverse[x] = 0;
       }
       printVariableFooter();
-
-      pulsesSentForward = 0; // Resetting these after each poll
-      pulsesSentForward2 = 0;
-      pulsesSentForward3 = 0;
-      pulsesSentForward4 = 0;
-
-      pulsesSentReverse = 0;
-      pulsesSentReverse2 = 0;
-      pulsesSentReverse3 = 0;
-      pulsesSentReverse4 = 0;
     }
     // handle sending the pulses every x seconds
     // EACH pulse needs its own set of variables if you want it to be independent
     // Essentially we want each strip handling an array, since we have 4 strips, it would be appropriate to have 4 arrays.
-    sendPulse(forwardColor, 1, &pulsesSentForward, pulsesToSendForward, &previousPulseMillis, outPulseInterval, 1); // call a pulse forward/OUT
-    // sendPulse(reverseColor, 1, &pulsesSentReverse, pulsesToSendReverse, &previousPulseMillis3, inPulseInterval, 0); // call a pulse reverse/IN
+    sendPulse(forwardColor[0], 1, &pulsesSentForward[0], pulsesToSendForward[0], &previousPulseMillis[0], outPulseInterval[0], 0); // call a pulse forward/OUT
+    sendPulse(reverseColor[0], 1, &pulsesSentReverse[0], pulsesToSendReverse[0], &previousPulseMillis[1], inPulseInterval[0], 1); // call a pulse reverse/IN
 
-    sendPulse(forwardColor2, 2, &pulsesSentForward2, pulsesToSendForward2, &previousPulseMillis2, outPulseInterval2, 1);
-    // sendPulse(reverseColor2, 2, &pulsesSentReverse2, pulsesToSendReverse2, &previousPulseMillis4, inPulseInterval2, 0);
+    sendPulse(forwardColor[1], 2, &pulsesSentForward[1], pulsesToSendForward[1], &previousPulseMillis[2], outPulseInterval[1], 0);
+    sendPulse(reverseColor[1], 2, &pulsesSentReverse[1], pulsesToSendReverse[1], &previousPulseMillis[3], inPulseInterval[1], 1);
 
-    sendPulse(forwardColor3, 3, &pulsesSentForward3, pulsesToSendForward3, &previousPulseMillis5, outPulseInterval3, 1);
-    // sendPulse(reverseColor3, 3, &pulsesSentReverse3, pulsesToSendReverse3, &previousPulseMillis6, inPulseInterval3, 0);
+    sendPulse(forwardColor[2], 3, &pulsesSentForward[2], pulsesToSendForward[2], &previousPulseMillis[4], outPulseInterval[2], 0);
+    sendPulse(reverseColor[2], 3, &pulsesSentReverse[2], pulsesToSendReverse[2], &previousPulseMillis[5], inPulseInterval[2], 1);
 
-    sendPulse(forwardColor4, 4, &pulsesSentForward4, pulsesToSendForward4, &previousPulseMillis7, outPulseInterval4, 1);
-    // sendPulse(reverseColor4, 4, &pulsesSentReverse4, pulsesToSendReverse4, &previousPulseMillis8, inPulseInterval4, 0);
+    sendPulse(forwardColor[3], 4, &pulsesSentForward[3], pulsesToSendForward[3], &previousPulseMillis[6], outPulseInterval[3], 0);
+    sendPulse(reverseColor[3], 4, &pulsesSentReverse[3], pulsesToSendReverse[3], &previousPulseMillis[7], inPulseInterval[3], 1);
+    litArray();
   }
 }
 
 // Lablights Functions
-void sendPulse(CRGB color, int strip, unsigned int *pulsesSentVar, int pulsesMaxSend, unsigned long *prevMillisOfPulse, unsigned long interval, int direction){
+void sendPulse(CRGB color, int strip, int *pulsesSentVar, int pulsesMaxSend, unsigned long *prevMillisOfPulse, unsigned long interval, int direction){
   unsigned long currentMillis = millis();
   if (currentMillis - *prevMillisOfPulse >= interval){
     *prevMillisOfPulse = currentMillis;
     if (*pulsesSentVar < pulsesMaxSend){
-      if (direction == 1){
-        forwardEvent(color, strip);
-      }else if (direction == 0){
-        reverseEvent(color, strip);
-      }
+      pulseEvent(color, strip, direction);
     }
   }
 }

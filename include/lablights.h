@@ -11,6 +11,5 @@ extern bool Strip4;
 void initFastLED();
 void ledPulse(int pulseSize, CRGB pulseColor, int pulseSpeed);
 void litArray();
-void forwardEvent(CRGB fColor, int strip);
-void reverseEvent(CRGB rColor, int strip);
+void pulseEvent(CRGB Color, int strip, int direction);
 void sendLightData(CRGB color, int pulses, int delayInterval, bool reverse);
