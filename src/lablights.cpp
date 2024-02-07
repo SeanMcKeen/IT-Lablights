@@ -111,72 +111,71 @@ void fadeAll() { // This is a global fade, there's no way to individually fade p
   }
 }
 
-void forwardEvent(CRGB color, int strip) { // This can be called to start a new pulse originating from the beginning of the strip, with the desired color
-  // Find the first available position in currentlyLitLedsForward and set it to 0
-  for (int i = 0; i < MAX_COMETS; i++) {
-    // Find the first available comet that's ready to be shot.
-    if (strip == 1) {
-      if (currentlyLitLedsForward[i] == -1) {
-        currentlyLitLedsForward[i] = 0; // We set it to 0 as our logic makes it so anything within the range of the strip will constantly be moved. -1 is not within the range so it is ignored until redefined here.
-
-        forwardColors[i] = color; // This is how we save what comets have what color values.
-        break;
-      }
-    }else if (strip == 2){
-      if (currentlyLitLedsForward[i] == -1) {
-        currentlyLitLedsForward[i] = LedSplit1 + 1;
-
-        forwardColors[i] = color;
-        break;
-      }
-    }else if (strip == 3){
-      if (currentlyLitLedsForward[i] == -1) {
-        currentlyLitLedsForward[i] = LedSplit2 + 1;
-
-        forwardColors[i] = color;
-        break;
-      }
-    }else if (strip == 4){
-      if (currentlyLitLedsForward[i] == -1) {
-        currentlyLitLedsForward[i] = LedSplit3 + 1;
-
-        forwardColors[i] = color;
-        break;
-      }
-    }
-  }
-}
-
-void reverseEvent(CRGB color, int strip) { // This is the exact same as forwardEvent() but in reverse.
+void pulseEvent(CRGB color, int strip, int direction) { // This is the exact same as forwardEvent() but in reverse.
   // Find the first available position in currentlyLitLedsReverse and set it to NUM_LEDS - 1
+  bool reverse;
+  if(direction == 1){reverse = true;}else{reverse = false;}
+
   for (int i = 0; i < MAX_COMETS; i++) {
-    if (strip == 1) {
-      if (currentlyLitLedsReverse[i] == -1) {
-        currentlyLitLedsReverse[i] = LedSplit1 - 1;
+    if (!reverse){
+      if (strip == 1) {
+        if (currentlyLitLedsForward[i] == -1) {
+          currentlyLitLedsForward[i] = 0; // We set it to 0 as our logic makes it so anything within the range of the strip will constantly be moved. -1 is not within the range so it is ignored until redefined here.
 
-        reverseColors[i] = color;
-        break;
+          forwardColors[i] = color; // This is how we save what comets have what color values.
+          break;
+        }
+      }else if (strip == 2){
+        if (currentlyLitLedsForward[i] == -1) {
+          currentlyLitLedsForward[i] = LedSplit1 + 1;
+
+          forwardColors[i] = color;
+          break;
+        }
+      }else if (strip == 3){
+        if (currentlyLitLedsForward[i] == -1) {
+          currentlyLitLedsForward[i] = LedSplit2 + 1;
+
+          forwardColors[i] = color;
+          break;
+        }
+      }else if (strip == 4){
+        if (currentlyLitLedsForward[i] == -1) {
+          currentlyLitLedsForward[i] = LedSplit3 + 1;
+
+          forwardColors[i] = color;
+          break;
+        }
       }
-    }else if (strip == 2) {
-      if (currentlyLitLedsReverse[i] == -1) {
-        currentlyLitLedsReverse[i] = LedSplit2 - 1;
+    }else{
+      if (strip == 1) {
+        if (currentlyLitLedsReverse[i] == -1) {
+          currentlyLitLedsReverse[i] = LedSplit1 - 1;
 
-        reverseColors[i] = color;
-        break;
-      }
-    }else if (strip == 3) {
-      if (currentlyLitLedsReverse[i] == -1) {
-        currentlyLitLedsReverse[i] = LedSplit3 - 1;
+          reverseColors[i] = color;
+          break;
+        }
+      }else if (strip == 2) {
+        if (currentlyLitLedsReverse[i] == -1) {
+          currentlyLitLedsReverse[i] = LedSplit2 - 1;
 
-        reverseColors[i] = color;
-        break;
-      }
-    }else if (strip == 4) {
-      if (currentlyLitLedsReverse[i] == -1) {
-        currentlyLitLedsReverse[i] = TotalLeds - 1;
+          reverseColors[i] = color;
+          break;
+        }
+      }else if (strip == 3) {
+        if (currentlyLitLedsReverse[i] == -1) {
+          currentlyLitLedsReverse[i] = LedSplit3 - 1;
 
-        reverseColors[i] = color;
-        break;
+          reverseColors[i] = color;
+          break;
+        }
+      }else if (strip == 4) {
+        if (currentlyLitLedsReverse[i] == -1) {
+          currentlyLitLedsReverse[i] = TotalLeds - 1;
+
+          reverseColors[i] = color;
+          break;
+        }
       }
     }
   }

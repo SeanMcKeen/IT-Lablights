@@ -24,7 +24,7 @@ const char *password = "letmeinnow";
 
 // Insert your SNMP Device Info 
 IPAddress Switch(SWITCH_IP);  // must capitalize the letter S for our variable
-const char *community = "public"; // if different from the default of "public"
+const char *community = SNMP_COMM; // if different from the default of "public"
 const int snmpVersion = 1; // SNMP Version 1 = 0, SNMP Version 2 = 1
 
 // How many ports?
@@ -32,8 +32,6 @@ const int numberOfPorts = NUM_PORTS; // Set this to the desired number of ports,
 // CAUTION: We seem to hit a maximum of how many ports can be polled at one time (30). if you experience device reboots, you are probably asking for too many OIDs
 
 const int Array1Count = NUMOFPORTS1;
-// How often should you poll the device? 
-// int pollInterval = POLL_DELAY; // polling interval (delay) in milliseconds - 1000 = 1 second
 
 // Now we set up our OID (Object Identifiers) variables for the items we want to query on our Switch
 // If you don't know what SNMP, MIBs and OIDs are, you can learn more about them here https://www.paessler.com/info/snmp_mibs_and_oids_an_overview
@@ -61,8 +59,7 @@ char sysName[50]; // empty string thats big enough for 50 characters I guess
 char *sysNameResponse = sysName; // will be replaced once we get a response
 unsigned int uptime = 0; 
 unsigned int lastUptime = 0; 
-// unsigned long pollStart = 0;
-// unsigned long intervalBetweenPolls = 0;
+
 int in1Total = 0;
 int out1Total = 0;
 int arr1Totals[2] = {};
@@ -80,6 +77,9 @@ int arr3Totals[2] = {};
 int in4Total = 0;
 int out4Total = 0;
 int arr4Totals[2] = {};
+
+long int arrINTotals[NUM_CHANNELS] = {};
+long int arrOUTTotals[NUM_CHANNELS] = {};
 
 // SNMP Objects
 WiFiUDP udp;                                           // UDP object used to send and receive packets
@@ -214,17 +214,17 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
 
 void setTotals(int arrayIndex){ // This is where we actually set the variables to pull from in our main.
   if (arrayIndex == 1){
-    arr1Totals[0] = in1Total; // We use arr1Totals for the entire strip 1, IN will be at index 0, and OUT will be at index 1.
-    arr1Totals[1] = out1Total;
+    arrINTotals[0] = in1Total;
+    arrOUTTotals[0] = out1Total;
   }else if (arrayIndex == 2){ // Repeat for strip 2
-    arr2Totals[0] = in2Total;
-    arr2Totals[1] = out2Total;
+    arrINTotals[1] = in2Total;
+    arrOUTTotals[1] = out2Total;
   }else if (arrayIndex == 3){ // Repeat for strip 2
-    arr3Totals[0] = in3Total;
-    arr3Totals[1] = out3Total;
+    arrINTotals[2] = in3Total;
+    arrOUTTotals[2] = out3Total;
   }else if (arrayIndex == 4){ // Repeat for strip 2
-    arr4Totals[0] = in4Total;
-    arr4Totals[1] = out4Total;
+    arrINTotals[3] = in4Total;
+    arrOUTTotals[3] = out4Total;
   }
 }
 
@@ -277,18 +277,18 @@ void printVariableFooter()
   lastUptime = currentTime;
   Serial.println();
   // Some debugging information
-  Serial.printf("Strip 1 Averaged, IN: %i  OUT: %i", arr1Totals[0], arr1Totals[1]);
+  Serial.printf("Strip 1 Averaged, IN: %i  OUT: %i", arrINTotals[0], arrOUTTotals[0]);
   Serial.println();
   if (Strip2){
-    Serial.printf("Strip 2 Averaged, IN: %i  OUT: %i", arr2Totals[0], arr2Totals[1]);
+    Serial.printf("Strip 2 Averaged, IN: %i  OUT: %i", arrINTotals[1], arrOUTTotals[1]);
     Serial.println();
   }
   if (Strip3){
-    Serial.printf("Strip 3 Averaged, IN: %i  OUT: %i", arr3Totals[0], arr3Totals[1]);
+    Serial.printf("Strip 3 Averaged, IN: %i  OUT: %i", arrINTotals[2], arrOUTTotals[2]);
     Serial.println();
   }
   if (Strip4){
-    Serial.printf("Strip 4 Averaged, IN: %i  OUT: %i", arr4Totals[0], arr4Totals[1]);
+    Serial.printf("Strip 4 Averaged, IN: %i  OUT: %i", arrINTotals[3], arrOUTTotals[3]);
     Serial.println();
   }
 }
