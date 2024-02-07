@@ -1,5 +1,7 @@
-extern long int arrINTotals[];
-extern long int arrOUTTotals[];
+extern int arr1Totals[2];
+extern int arr2Totals[2];
+extern int arr3Totals[2];
+extern int arr4Totals[2];
 
 void SNMPsetup(int Array[], int sizeOfArray);
 void snmpLoop(int Array[], int arrayCount, int arrayIndex);
