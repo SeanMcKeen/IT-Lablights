@@ -230,24 +230,29 @@ void setTotals(int arrayIndex){ // This is where we actually set the variables t
 
 void getInSNMP(int Array[], int arrayCount) // This is a lot of stuff I don't understand, so just research snmp coding and you might understand.
 {
+  Serial.println("getInSNMP");
   for (int i = 0; i < arrayCount; ++i) {
-  int o = Array[i];
-  snmpRequest.addOIDPointer(callbackInOctets[o]);
+    int o = Array[i];
+    snmpRequest.addOIDPointer(callbackInOctets[o]);
   }
   snmpRequest.addOIDPointer(callbackSysName);
   snmpRequest.addOIDPointer(callbackUptime);
   snmpRequest.setIP(WiFi.localIP()); // IP of the listening MCU
   snmpRequest.setUDP(&udp);
   snmpRequest.setRequestID(rand() % 5555);
+  Serial.println("Before sendTo");
   snmpRequest.sendTo(Switch);
+  Serial.println("After SendTo");
   snmpRequest.clearOIDList();
+  Serial.println("getInFinished");
 }
 
 void getOutSNMP(int Array[], int arrayCount) // Again I have no clue, this was part of the sample code in the library I used.
 {
+  Serial.println("getOutSNMP");
   for (int i = 0; i < arrayCount; ++i) {
-  int o = Array[i];
-  snmpRequest.addOIDPointer(callbackOutOctets[o]);
+    int o = Array[i];
+    snmpRequest.addOIDPointer(callbackOutOctets[o]);
   }
   snmpRequest.addOIDPointer(callbackSysName);
   snmpRequest.addOIDPointer(callbackUptime);

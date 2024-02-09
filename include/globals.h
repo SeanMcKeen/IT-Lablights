@@ -16,7 +16,7 @@
     #define OUT_OCTET       ".1.3.6.1.2.1.2.2.1.16."
     #define SNMP_COMM       "public" // Community value of snmp, default: "public"
     #define NUM_PORTS       48 // Number of ports on the switch
-    #define POLL_DELAY      10000 // 10 seconds
+    #define POLL_DELAY      30000 // 10 seconds
 
     #define BRIGHTNESS      100 // default is 64; MAX: 255
     #define NUM_CHANNELS    4 // number of strips being used (currently has no importance)

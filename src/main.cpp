@@ -74,33 +74,25 @@ void loop() {
       printVariableHeader(); // Another func from snmp.cpp, prints debugging data in serial output
       // This block establishes all variables for strip 1 pulses
       for (int x = 0; x < NUM_CHANNELS; x++){
+        Serial.println("loop");
         switch (x)
         {
         case 0:
           snmpLoop(Array1, sizeof(Array1), x);
           break;
-        case 1:
-          snmpLoop(Array2, sizeof(Array2), x);
-          break;
-        case 2:
-          snmpLoop(Array3, sizeof(Array3), x);
-          break;
-        case 3:
-          snmpLoop(Array4, sizeof(Array4), x);
-          break;
         }
-        InAvg[x] = arrINTotals[x];
-        OutAvg[x] = arrOUTTotals[x];
-        pulsesToSendForward[x] = calcSNMPPulses(OutAvg[x]);
-        forwardColor[x] = calcPulseColor(OutAvg[x]);
-        outPulseInterval[x] = (pollTiming/pulsesToSendForward[x] * 1000);
+        // InAvg[x] = arrINTotals[x];
+        // OutAvg[x] = arrOUTTotals[x];
+        // pulsesToSendForward[x] = calcSNMPPulses(OutAvg[x]);
+        // forwardColor[x] = calcPulseColor(OutAvg[x]);
+        // outPulseInterval[x] = (pollTiming/pulsesToSendForward[x] * 1000);
 
-        pulsesToSendReverse[x] = calcSNMPPulses(InAvg[x]);
-        reverseColor[x] = calcPulseColor2(InAvg[x]);
-        inPulseInterval[x] = (pollTiming/pulsesToSendReverse[x] * 1000);
+        // pulsesToSendReverse[x] = calcSNMPPulses(InAvg[x]);
+        // reverseColor[x] = calcPulseColor2(InAvg[x]);
+        // inPulseInterval[x] = (pollTiming/pulsesToSendReverse[x] * 1000);
 
-        pulsesSentForward[x] = 0;
-        pulsesSentReverse[x] = 0;
+        // pulsesSentForward[x] = 0;
+        // pulsesSentReverse[x] = 0;
       }
       printVariableFooter();
     }
