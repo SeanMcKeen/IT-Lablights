@@ -1,5 +1,6 @@
-#include <globals.h>
-#include <secrets.h>
+#include "globals.h"
+#include "secrets.h"
+#include "vector"
 // Place header files above, headers are like pointers to other files in the project. 
 // Headers must include function definitions for functions you want to use in other files. 
 // Header files SHOULD be named the same as the cpp file they correspond to.
@@ -11,6 +12,8 @@ int pollInterval = POLL_DELAY;
 int pollTiming = pollInterval/1000;
 unsigned long pollStart = 0;
 unsigned long intervalBetweenPolls = 0;
+
+int channelAmount = NUM_CHANNELS;
 
 // Thank you to the person in reddit for suggesting I use arrays!!
 // PulseInterval Variables (Must have a forward and reverse for each strip)
@@ -36,17 +39,17 @@ int InAvg[NUM_CHANNELS] = {};
 int OutAvg[NUM_CHANNELS] = {};
 
 #if LABLIGHTS // Here's where we include Lablights ONLY header files, saves space and time in case we want to build a different project
-#include <enablewifi.h>
-#include <snmpgrab.h>
-#include <lablights.h>
-#include <mathhandler.h>
+#include "enablewifi.h"
+#include "snmpgrab.h"
+#include "lablights.h"
+#include "mathhandler.h"
 #endif
 
 // Here we define our globals.h variables into other variables.
-int Array1[] = ARRAY_1;
-int Array2[] = ARRAY_2;
-int Array3[] = ARRAY_3;
-int Array4[] = ARRAY_4;
+std::vector<int> Array1 = ARRAY_1;
+std::vector<int> Array2 = ARRAY_2;
+std::vector<int> Array3 = ARRAY_3;
+std::vector<int> Array4 = ARRAY_4;
 
 // define functions
 void sendPulse(CRGB color, int strip, int *PulsesSentVar, int pulsesMaxSend, unsigned long *prevMillisOfPulse, unsigned long interval, int direction);
@@ -55,10 +58,10 @@ void setup() { // Main Setup
   if (PROJECT_NAME == "Lablights") { // Again, setup exclusive to Lablights
     Serial.begin(115200); // Begin serial monitor, so we can write outputs
     WifiBegin();
-    SNMPsetup(Array1, 2); // Must be called for every port array being used.
-    if (Strip2){SNMPsetup(Array2, 2);}
-    if (Strip3){SNMPsetup(Array3, 2);}
-    if (Strip4){SNMPsetup(Array4, 2);}
+    SNMPsetup(Array1); // Must be called for every port array being used.
+    if (Strip2){SNMPsetup(Array2);}
+    if (Strip3){SNMPsetup(Array3);}
+    if (Strip4){SNMPsetup(Array4);}
     initFastLED();
   }
 }
@@ -73,26 +76,30 @@ void loop() {
 
       printVariableHeader(); // Another func from snmp.cpp, prints debugging data in serial output
       // This block establishes all variables for strip 1 pulses
-      for (int x = 0; x < NUM_CHANNELS; x++){
-        Serial.println("loop");
-        switch (x)
-        {
-        case 0:
-          snmpLoop(Array1, sizeof(Array1), x);
-          break;
+      for (int y = 0; y < channelAmount; y++){
+        if (y > channelAmount){break;}
+        if (y==0){
+          snmpLoop(Array1, 1);
+        }else if (y==1){
+          snmpLoop(Array2, 2);
+        }else if (y==2){
+          snmpLoop(Array3, 3);
+        }else if (y==3){
+          snmpLoop(Array4, 4);
         }
-        // InAvg[x] = arrINTotals[x];
-        // OutAvg[x] = arrOUTTotals[x];
-        // pulsesToSendForward[x] = calcSNMPPulses(OutAvg[x]);
-        // forwardColor[x] = calcPulseColor(OutAvg[x]);
-        // outPulseInterval[x] = (pollTiming/pulsesToSendForward[x] * 1000);
+        InAvg[y] = arrINTotals[y];
+        OutAvg[y] = arrOUTTotals[y];
 
-        // pulsesToSendReverse[x] = calcSNMPPulses(InAvg[x]);
-        // reverseColor[x] = calcPulseColor2(InAvg[x]);
-        // inPulseInterval[x] = (pollTiming/pulsesToSendReverse[x] * 1000);
+        pulsesToSendForward[y] = calcSNMPPulses(OutAvg[y]);
+        forwardColor[y] = calcPulseColor(OutAvg[y]);
+        outPulseInterval[y] = (pollTiming/pulsesToSendForward[y] * 1000);
 
-        // pulsesSentForward[x] = 0;
-        // pulsesSentReverse[x] = 0;
+        pulsesToSendReverse[y] = calcSNMPPulses(InAvg[y]);
+        reverseColor[y] = calcPulseColor2(InAvg[y]);
+        inPulseInterval[y] = (pollTiming/pulsesToSendReverse[y] * 1000);
+
+        pulsesSentForward[y] = 0;
+        pulsesSentReverse[y] = 0;
       }
       printVariableFooter();
     }

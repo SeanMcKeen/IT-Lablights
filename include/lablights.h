@@ -1,5 +1,5 @@
-#include <FastLED.h>
-#include <globals.h>
+#include "FastLED.h"
+#include "globals.h"
 
 extern CRGB leds[NUM_LEDS];
 

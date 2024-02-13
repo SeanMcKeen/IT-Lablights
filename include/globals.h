@@ -16,10 +16,10 @@
     #define OUT_OCTET       ".1.3.6.1.2.1.2.2.1.16."
     #define SNMP_COMM       "public" // Community value of snmp, default: "public"
     #define NUM_PORTS       48 // Number of ports on the switch
-    #define POLL_DELAY      30000 // 10 seconds
+    #define POLL_DELAY      10000 // Default: 10000 or 10 seconds
 
     #define BRIGHTNESS      100 // default is 64; MAX: 255
-    #define NUM_CHANNELS    4 // number of strips being used (currently has no importance)
+    #define NUM_CHANNELS    4 // number of strips being used
     #define MAX_COMETS      100 // To prevent the device from saving more spots than necessary and possibly causing delay or lag
     #define SPEED           20 // Interval in milliseconds (How fast the pulses travel, decreasing this value increases the speeds) default: 20
 
@@ -49,7 +49,7 @@
     #define ARRAY_2         {3,4}
     #define NUMOFPORTS2     2
 
-    #define ARRAY_3         {42,43}
+    #define ARRAY_3         {5,6}
     #define NUMOFPORTS3     2
 
     #define ARRAY_4         {7,8}

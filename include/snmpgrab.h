@@ -1,8 +1,10 @@
+#include "vector"
+
 extern long int arrINTotals[];
 extern long int arrOUTTotals[];
 
-void SNMPsetup(int Array[], int sizeOfArray);
-void snmpLoop(int Array[], int arrayCount, int arrayIndex);
+void SNMPsetup(std::vector<int> Array);
+void snmpLoop(std::vector<int> Array, int arrayIndex);
 void printVariableHeader();
 void printVariableFooter();
 void callLoop();

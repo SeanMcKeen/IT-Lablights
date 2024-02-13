@@ -1,6 +1,6 @@
-#include <FastLED.h>
-#include <globals.h>
-#include <random>
+#include "FastLED.h"
+#include "globals.h"
+#include "random"
 
 // Add the number of channels because if you have 4 channels you need 4 "gaps" or spaces that dont exist
 const int TotalLeds = NUM_LEDS + NUM_LEDS2 + NUM_LEDS3 + NUM_LEDS4 + NUM_CHANNELS;

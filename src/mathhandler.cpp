@@ -1,4 +1,4 @@
-#include <mathhandler.h>
+#include "FastLED.h"
 
 int calcSNMPPulses(int Avg) { // Where we determine data to pulse ratio, an average of 34000 packets will send 3 pulses, while 36000 will send 5, this can be changed however desired
     if (Avg < 1000) {
