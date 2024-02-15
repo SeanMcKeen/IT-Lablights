@@ -1,3 +1,3 @@
-int calcSNMPPulses(int Avg);
-CRGB calcPulseColor(int Avg);
-CRGB calcPulseColor2(int Avg);
+int calcSNMPPulses(unsigned long long Avg);
+CRGB calcPulseColor(unsigned long long Avg);
+CRGB calcPulseColor2(unsigned long long Avg);

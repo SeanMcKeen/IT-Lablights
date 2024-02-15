@@ -1,6 +1,6 @@
 #include "FastLED.h"
 
-int calcSNMPPulses(int Avg) { // Where we determine data to pulse ratio, an average of 34000 packets will send 3 pulses, while 36000 will send 5, this can be changed however desired
+int calcSNMPPulses(unsigned long long Avg) { // Where we determine data to pulse ratio, an average of 34000 packets will send 3 pulses, while 36000 will send 5, this can be changed however desired
     if (Avg < 1000) {
         return 1;
     }else if (Avg < 10000) {
@@ -26,7 +26,7 @@ int calcSNMPPulses(int Avg) { // Where we determine data to pulse ratio, an aver
     }
 }
 
-CRGB calcPulseColor(int Avg) { // This is to make a reactive color depending on the packet size, in a CGRB strip, like mine, Green is Red and Red is Green
+CRGB calcPulseColor(unsigned long long Avg) { // This is to make a reactive color depending on the packet size, in a CGRB strip, like mine, Green is Red and Red is Green
     if (Avg < 35000) {
         return CRGB::Green;
     }else if (Avg < 80000) {
@@ -42,7 +42,7 @@ CRGB calcPulseColor(int Avg) { // This is to make a reactive color depending on 
     }
 }
 
-CRGB calcPulseColor2(int Avg) { // This is to have similar, but not exactly the same colors
+CRGB calcPulseColor2(unsigned long long Avg) { // This is to have similar, but not exactly the same colors
     if (Avg < 35000) {
         return CRGB(5420608);
     }else if (Avg < 80000) {

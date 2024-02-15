@@ -73,7 +73,7 @@ void litArray() {
     for (int i = 0; i < MAX_COMETS; i++) { // creates a pulse as long as there aren't more than the maximum comets/pulses
       //strip 1
       if (currentlyLitLedsForward[i] >= 0 && currentlyLitLedsForward[i] <= TotalLeds) { // We make sure the pulse fits within the bounds of the strip (currentlyLitLedsForward[1] would return the position of the first comet in the array EX: 80 would be LED 80/100 if it's a 100 LED strip)
-        leds[currentlyLitLedsForward[i]] += forwardColors[i];
+        leds[currentlyLitLedsForward[i]] = forwardColors[i];
         // Set the LED to the color passed to the func, leds[] is the array used to send data to a specific LED, to send color data to LED 100 we would use leds[100] = COLOR
         currentlyLitLedsForward[i]++; // Move the comet forward
 
@@ -86,7 +86,7 @@ void litArray() {
     // Handle the reverse pulse
     for (int i = 0; i < MAX_COMETS; i++) { // Does the same exact thing as forwardpulse function above, but in reverse
       if (currentlyLitLedsReverse[i] >= 0 && currentlyLitLedsReverse[i] <= TotalLeds) {    
-        leds[currentlyLitLedsReverse[i]] += reverseColors[i];
+        leds[currentlyLitLedsReverse[i]] = reverseColors[i];
         // Set the LED to the color passed to the func
         currentlyLitLedsReverse[i]--; // Move the comet backward
 
