@@ -17,6 +17,8 @@
     #define SNMP_COMM       "public" // Community value of snmp, default: "public"
     #define NUM_PORTS       48 // Number of ports on the switch
     #define POLL_DELAY      10000 // Default: 10000 or 10 seconds
+    #define DATA_CAP        500000 // Cap out the data so we don't get huge numbers like 3 billion if we dont want them.
+    #define SNMPDEBUG       1
 
     #define BRIGHTNESS      100 // default is 64; MAX: 255
     #define NUM_CHANNELS    4 // number of strips being used

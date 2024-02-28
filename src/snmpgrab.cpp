@@ -47,8 +47,8 @@ const char* oidOutOctets[numberOfPorts]; // and we have to do that in setup
 
 char sysName[50]; // empty string thats big enough for 50 characters I guess
 char *sysNameResponse = sysName; // will be replaced once we get a response
-unsigned int uptime = 0; 
-unsigned int lastUptime = 0; 
+uint32_t uptime = 0; 
+uint32_t lastUptime = 0; 
 
 unsigned long long int arrINTotals[NUM_PORTS+1] = {};
 unsigned long long int arrOUTTotals[NUM_PORTS+1] = {};
@@ -112,27 +112,33 @@ void handleAllOutputs(const std::vector<int>& Array){
     // Some data displays as negative when first uploading, but it balances out after you give it a few polls
 
     // Prints and sets the ports IN data:
-    Serial.println();
-    Serial.printf("Port %i IN: ", port);
+    if (SNMPDEBUG){
+      Serial.println();
+      Serial.printf("Port %i IN: ", port);
+    }
     subT = responseInOctets[port] - lastInOctets[port]; // response from port o minus last response from port o
-    Serial.print(subT);
+    if(subT>DATA_CAP){subT=DATA_CAP; if(SNMPDEBUG){Serial.print("☆ ");}}
+    if (SNMPDEBUG){Serial.print(subT);}
     lastInOctets[port] = responseInOctets[port]; // set the last to the response, after this is where response can be redefined and it wont matter.
     arrINTotals[port] = subT;
   }
   // Just to get a line between IN and OUT
-  Serial.println();
+  if (SNMPDEBUG){Serial.println();}
 
   // Prints and sets the ports OUT data:
   for (const int port : Array) {
     unsigned long long int subT = 0;
-    Serial.println();
-    Serial.printf("Port %i OUT: ", port);
     subT = responseOutOctets[port]-lastOutOctets[port];
-    Serial.print(subT);
+    if (SNMPDEBUG){
+      Serial.println();
+      Serial.printf("Port %i OUT: ", port);
+    }
+    if(subT>DATA_CAP){subT=DATA_CAP; if (SNMPDEBUG){Serial.print("☆ ");}}
+    if(SNMPDEBUG){Serial.print(subT);}
     lastOutOctets[port] = responseOutOctets[port];
     arrOUTTotals[port] = subT;
   }
-  Serial.println();
+  if(SNMPDEBUG){Serial.println();}
 }
 
 void getInSNMP(const std::vector<int>& Array) // This is a lot of stuff I don't understand, so just research snmp coding and you might understand.
@@ -168,7 +174,7 @@ void printVariableHeader()
   Serial.print("My IP: ");
   Serial.println(WiFi.localIP());
   Serial.printf("Polling Device: %s\n", sysNameResponse);
-  Serial.printf("Uptime: %d\n", uptime);
+  Serial.printf("Uptime: %lu\n", uptime);
   Serial.println("----------------------");
 }
 
