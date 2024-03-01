@@ -88,10 +88,8 @@ void loop() {
       // This block establishes all variables for strip 1 pulses
       // snmpLoop(MainArray);
 
-      unsigned long long int thisINTotal = 0;
-      unsigned long long int thisOUTTotal = 0;
-
       for (int y : MainArray){
+        Serial.println(y); // I'm getting 0's after the initial run??
         InAvg[y] = 500000;
         OutAvg[y] = 500000;
 
