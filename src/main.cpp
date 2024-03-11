@@ -25,26 +25,29 @@ int channelAmount = NUM_CHANNELS;
 
 // Thank you to the person in reddit for suggesting I use arrays!!
 // PulseInterval Variables (Must have a forward and reverse for each strip)
-unsigned long inPulseInterval[NUM_CHANNELS+1] = {};
+unsigned long inPulseInterval[NUM_CHANNELS] = {0};
 
-unsigned long outPulseInterval[NUM_CHANNELS+1] = {};
+unsigned long outPulseInterval[NUM_CHANNELS] = {0};
 
 //We need a previous pulse for each strips' forward and backward, AKA 2*NUM_CHANNELS
-unsigned long previousPulseMillis[NUM_CHANNELS*2] = {};
+unsigned long previousPulseMillis[NUM_CHANNELS*2] = {0};
 
 // PulsesToSend Variables (Must have a forward and reverse for each strip)
-int pulsesToSendForward[NUM_CHANNELS+1] = {};
-int pulsesToSendReverse[NUM_CHANNELS+1] = {};
+int pulsesToSendForward[NUM_CHANNELS] = {0};
+int pulsesToSendReverse[NUM_CHANNELS] = {0};
 
 // PulsesSent Variables (Must have a forward and reverse for each strip)
-int pulsesSentForward[NUM_CHANNELS+1] = {};
-int pulsesSentReverse[NUM_CHANNELS+1] = {};
+int pulsesSentForward[NUM_CHANNELS] = {0};
+int pulsesSentReverse[NUM_CHANNELS] = {0};
 
-CRGB forwardColor[NUM_CHANNELS+1] = {CRGB::Blue};
-CRGB reverseColor[NUM_CHANNELS+1] = {CRGB::Blue};
+CRGB forwardColor[NUM_CHANNELS] = {CRGB::Blue};
+CRGB reverseColor[NUM_CHANNELS] = {CRGB::Blue};
 
-unsigned long InAvg[NUM_PORTS+1] = {};
-unsigned long OutAvg[NUM_PORTS+1] = {};
+unsigned long Ins[NUM_PORTS+1] = {0};
+unsigned long Outs[NUM_PORTS+1] = {0};
+
+unsigned long ArrIns[NUM_CHANNELS] = {0};
+unsigned long ArrOuts[NUM_CHANNELS] = {0};
 
 #if LABLIGHTS // Here's where we include Lablights ONLY header files, saves space and time in case we want to build a different project
 #include "enablewifi.h"
@@ -60,13 +63,14 @@ void printVariableFooter();
 void makeArrays();
 bool inArray(std::vector<int> arr, int num);
 int getIndex(int y);
+void clearData();
 
 void setup() { // Main Setup
   if (PROJECT_NAME == "Lablights") { // Again, setup exclusive to Lablights
     Serial.begin(115200); // Begin serial monitor, so we can write outputs
     WifiBegin();
     makeArrays();
-    SNMPsetup(MainArray);
+    // SNMPsetup(MainArray);
     initFastLED();
   }
 }
@@ -74,50 +78,55 @@ void setup() { // Main Setup
 // Main loop
 void loop() {
   if (PROJECT_NAME == "Lablights") {
-    callLoop();
+    // callLoop();
     litArray();
     unsigned long currentMillis = millis();
     if (currentMillis - prevPollMillis >= pollInterval){
-      
       if (SNMPDEBUG){
         size_t freeHeap = esp_get_free_heap_size();
         Serial.printf("Free heap size: %d bytes\n", freeHeap);
       }
 
-      if (SNMPDEBUG){printVariableHeader();} // Another func from snmp.cpp, prints debugging data in serial output
+      // if (SNMPDEBUG){printVariableHeader();} // Another func from snmp.cpp, prints debugging data in serial output
       // This block establishes all variables for strip 1 pulses
       // snmpLoop(MainArray);
+      int index;
 
       for (int y : MainArray){
-        Serial.println(y); // I'm getting 0's after the initial run??
-        InAvg[y] = 500000;
-        OutAvg[y] = 500000;
+        // Serial.println(y); // I'm getting 0's after the initial run??
+        Ins[y] = 500000;
+        Outs[y] = 500000;
 
         // InAvg[y] = arrINTotals[y];
         // OutAvg[y] = arrOUTTotals[y];
-
-        int index = getIndex(y);
-
-        if (index != -1){
-          pulsesToSendForward[index] = calcSNMPPulses(OutAvg[index]);
-          forwardColor[index] = calcPulseColor(OutAvg[index]);
-          outPulseInterval[index] = (pollTiming/pulsesToSendForward[index] * 1000);
-
-          pulsesToSendReverse[index] = calcSNMPPulses(InAvg[index]);
-          reverseColor[index] = calcPulseColor2(InAvg[index]);
-          inPulseInterval[index] = (pollTiming/pulsesToSendReverse[index] * 1000);
-
-          pulsesSentForward[index] = 0;
-          pulsesSentReverse[index] = 0;
+        index = getIndex(y);
+        if (index >= 0){
+          ArrIns[index] += Ins[index];
+          ArrOuts[index] += Outs[index];
         }
       }
-      printVariableFooter();
+      for (int i = 0; i < NUM_CHANNELS; i++){ // All variables will be index 0-3 unless holding/controlling ports
+        Serial.printf("111, %i\n", i);
+        pulsesToSendForward[3] = calcSNMPPulses(ArrOuts[i]); // why does this crash on index 3????
+        // forwardColor[i] = calcPulseColor(ArrOuts[i]);
+
+        // pulsesToSendReverse[i] = calcSNMPPulses(ArrIns[i]);
+        // reverseColor[i] = calcPulseColor2(ArrIns[i]);
+        // outPulseInterval[i] = (pollTiming/pulsesToSendForward[i] * 1000);
+        // inPulseInterval[i] = (pollTiming/pulsesToSendReverse[i] * 1000);
+
+        // pulsesSentForward[i] = 0;
+        // pulsesSentReverse[i] = 0;
+
+      }
+      // printVariableFooter();
       prevPollMillis = millis();
     }
     // handle sending the pulses every x seconds
     // EACH pulse needs its own set of variables if you want it to be independent
     // Essentially we want each strip handling an array, since we have 4 strips, it would be appropriate to have 4 arrays.
     sendPulses();
+    clearData();
   }
 }
 
@@ -127,21 +136,21 @@ void sendPulse(int strip, int direction, int prev){
   int interval;
   CRGB color;
   if (direction == 0){
-    interval = outPulseInterval[strip];
-    color = forwardColor[strip];
+    interval = outPulseInterval[strip-1];
+    color = forwardColor[strip-1];
   }else{
-    interval = inPulseInterval[strip];
-    color = reverseColor[strip];
+    interval = inPulseInterval[strip-1];
+    color = reverseColor[strip-1];
   }
 
   if (currentMillis - previousPulseMillis[prev] >= interval){
     previousPulseMillis[prev] = currentMillis;
   if (direction == 0){
-    if (pulsesSentForward[strip] < pulsesToSendForward[strip]){
+    if (pulsesSentForward[strip-1] < pulsesToSendForward[strip-1]){
       pulseEvent(color, strip, direction);
     }
   }else{
-    if (pulsesSentReverse[strip] < pulsesToSendReverse[strip]){
+    if (pulsesSentReverse[strip-1] < pulsesToSendReverse[strip-1]){
       pulseEvent(color, strip, direction);
     }
   }
@@ -156,10 +165,10 @@ void sendPulses() {
 }
 
 int getIndex(int y) {
-  if (inArray(Array1, y)) return 1;
-  else if (inArray(Array2, y)) return 2;
-  else if (inArray(Array3, y)) return 3;
-  else if (inArray(Array4, y)) return 4;
+  if (inArray(Array1, y)) return 0;
+  else if (inArray(Array2, y)) return 1;
+  else if (inArray(Array3, y)) return 2;
+  else if (inArray(Array4, y)) return 3;
   return -1;
 }
 
@@ -211,4 +220,17 @@ bool inArray(std::vector<int> arr, int num) {
     }
   }
   return false; // Return false if num is not found in the array
+}
+
+void clearData(){
+  for (int i = 1; i <= NUM_CHANNELS; i++){
+    pulsesToSendForward[i] = 0;
+    forwardColor[i] = 0;
+    pulsesToSendReverse[i] = 0;
+    reverseColor[i] = 0;
+    outPulseInterval[i] = 0;
+    inPulseInterval[i] = 0;
+    Ins[i] = 0;
+    Outs[i] = 0;
+  }
 }

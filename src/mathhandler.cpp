@@ -1,32 +1,18 @@
 #include "FastLED.h"
 
-int calcSNMPPulses(unsigned long long Avg) { // Where we determine data to pulse ratio, an average of 34000 packets will send 3 pulses, while 36000 will send 5, this can be changed however desired
-    if (Avg < 1000) {
-        return 1;
-    }else if (Avg < 10000) {
-        return 2;
-    }else if (Avg < 35000) {
-        return 3;
-    }else if (Avg < 100000) {
-        return 5;
-    }else if (Avg < 200000) {
-        return 6;
-    }else if (Avg < 300000) {
-        return 7;
-    }else if (Avg < 400000) {
-        return 8;
-    }else if (Avg < 500000) {
-        return 9;
-    }else if (Avg < 1000000) {
-        return 12;
-    }else if (Avg < 3000000) {
-        return 15;
-    }else{
-        return 17;
-    }
+int calcSNMPPulses(unsigned long Avg) {
+    // if (Avg >= 1 && Avg <= 100000) {
+    //     // Map Avg values in the range [1, 100000] to the range [1, 5]
+    //     return round(1 + 4 * ((double)Avg / 100000));
+    // } else if (Avg > 100000 && Avg <= 1000000) {
+    //     // Map Avg values in the range (100000, 1000000] to the range [6, 10]
+    //     return round(6 + 4 * ((double)Avg - 100000) / 900000);
+    // }
+    // // Return a default value or handle other cases as necessary
+    return 1;
 }
 
-CRGB calcPulseColor(unsigned long long Avg) { // This is to make a reactive color depending on the packet size, in a CGRB strip, like mine, Green is Red and Red is Green
+CRGB calcPulseColor(unsigned long Avg) { // This is to make a reactive color depending on the packet size, in a CGRB strip, like mine, Green is Red and Red is Green
     if (Avg < 35000) {
         return CRGB::Green;
     }else if (Avg < 80000) {
@@ -42,7 +28,7 @@ CRGB calcPulseColor(unsigned long long Avg) { // This is to make a reactive colo
     }
 }
 
-CRGB calcPulseColor2(unsigned long long Avg) { // This is to have similar, but not exactly the same colors
+CRGB calcPulseColor2(unsigned long Avg) { // This is to have similar, but not exactly the same colors
     if (Avg < 35000) {
         return CRGB(5420608);
     }else if (Avg < 80000) {
