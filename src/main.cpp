@@ -92,6 +92,8 @@ void loop() {
       // snmpLoop(MainArray);
       int index;
 
+      clearData();
+
       for (int y : MainArray){
         // Serial.println(y); // I'm getting 0's after the initial run??
         Ins[y] = 500000;
@@ -126,7 +128,6 @@ void loop() {
     // EACH pulse needs its own set of variables if you want it to be independent
     // Essentially we want each strip handling an array, since we have 4 strips, it would be appropriate to have 4 arrays.
     sendPulses();
-    clearData();
   }
 }
 
