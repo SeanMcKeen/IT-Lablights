@@ -19,6 +19,7 @@ CRGB reverseColor[4] = {CRGB::Blue};
 #include "lablights.h"
 #include "mathhandler.h"
 #include "numsim.h"
+#include "display.h"
 #endif
 
 int arrays[4][2];
@@ -30,6 +31,7 @@ void setup() {
   if (PROJECT_NAME == "Lablights") {
     Serial.begin(115200);
     initFastLED();
+    setupDisplay();
     initSim();
   }
 }
@@ -40,6 +42,7 @@ void loop() {
     intervalBetweenPolls = millis() - pollStart;
     if (intervalBetweenPolls >= pollInterval) {
       pollStart += pollInterval;
+      refreshScreen();
       simulateTraffic();
       for (int i = 0; i < 4; ++i) {
           int InAvg = arrTotals[i][0];

@@ -38,9 +38,4 @@
 
     #define LED_TYPE        WS2812B // Almost no clue what this means, the type of leds being used or something
     #define COLOR_ORDER     RGB // Currently affects nothing
-
-    #define PORT1            1
-    #define PORT2            6
-    #define PORT3            8
-    #define PORT4            32
 #endif
