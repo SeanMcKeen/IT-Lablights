@@ -10,7 +10,7 @@
     #define PROJECT_NAME    "Lablights" // This is the main project, but in case we want to eventually have more.
     #endif
     
-    #define DEBUG 1
+    #define DEBUG           0
     
     #define POLL_DELAY      10000 // 10 seconds
 
