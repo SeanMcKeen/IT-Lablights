@@ -10,15 +10,9 @@
     #define PROJECT_NAME    "Lablights" // This is the main project, but in case we want to eventually have more.
     #endif
     
-    // Switch & SNMP Settings
-    #define SWITCH_IP       IPAddress(192,168,2,14) // IP address of the switch you're targeting
-    #define IN_OCTET        ".1.3.6.1.2.1.2.2.1.10." // Turns out these aren't the same for everyone, make sure you find this out.
-    #define OUT_OCTET       ".1.3.6.1.2.1.2.2.1.16."
-    #define SNMP_COMM       "public" // Community value of snmp, default: "public"
-    #define NUM_PORTS       48 // Number of ports on the switch
-    #define POLL_DELAY      10000 // Default: 10000 or 10 seconds
-    #define DATA_CAP        500000 // Cap out the data so we don't get huge numbers like 3 billion if we dont want them.
-    #define SNMPDEBUG       1
+    #define DEBUG 1
+    
+    #define POLL_DELAY      10000 // 10 seconds
 
     #define BRIGHTNESS      100 // default is 64; MAX: 255
     #define NUM_CHANNELS    4 // number of strips being used
@@ -45,15 +39,8 @@
     #define LED_TYPE        WS2812B // Almost no clue what this means, the type of leds being used or something
     #define COLOR_ORDER     RGB // Currently affects nothing
 
-    #define ARRAY_1         {1,2} // an array of ports you want to be checked for snmp data
-    #define NUMOFPORTS1     2 // how many ports you defined above, idk how else to do this
-
-    #define ARRAY_2         {3,4} // leave as {} if not being used.
-    #define NUMOFPORTS2     2
-
-    #define ARRAY_3         {5,6}
-    #define NUMOFPORTS3     2
-
-    #define ARRAY_4         {7,8}
-    #define NUMOFPORTS4     2
+    #define PORT1            1
+    #define PORT2            6
+    #define PORT3            8
+    #define PORT4            32
 #endif
