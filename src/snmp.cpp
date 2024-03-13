@@ -65,21 +65,19 @@ unsigned int lastUptime = 0;
 // unsigned long intervalBetweenPolls = 0;
 int in1Total = 0;
 int out1Total = 0;
-int arr1Totals[2] = {};
 
 // We'll leave these established as it wont really affect speed, and would cause issues to try to IF define them.
 // Need a block for each strip
 int in2Total = 0;
 int out2Total = 0;
-int arr2Totals[2] = {};
 
 int in3Total = 0;
 int out3Total = 0;
-int arr3Totals[2] = {};
 
 int in4Total = 0;
 int out4Total = 0;
-int arr4Totals[2] = {};
+
+int arrTotals[4][2];
 
 // SNMP Objects
 WiFiUDP udp;                                           // UDP object used to send and receive packets
@@ -153,78 +151,76 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
     // Debugging: Print the values to help identify issues
     // Some data displays as negative when first uploading, but it balances out after you give it a few polls
 
-    // Prints and sets the ports IN data:
-    Serial.println();
-    Serial.printf("Port %i IN: ", o);
     if (arrayIndex == 1){ // If on the first strip
       subT = responseInOctets[o] - lastInOctets1[o]; // We only need lastInOctets variables to be exclusive, response is changed each time so we don't need a response1, 2, etc.
-      Serial.print(subT);
       in1Total += subT; // add the difference to the total, this is what we actually pull from in our main.cpp
       lastInOctets1[o] = responseInOctets[o]; // set the last to the response, after this is where response can be redefined and it wont matter.
     }else if (arrayIndex == 2){ // repeat for strip 2
       subT = responseInOctets[o] - lastInOctets2[o];
-      Serial.print(subT);
       in2Total += subT;
       lastInOctets2[o] = responseInOctets[o];
     }else if (arrayIndex == 3){ // repeat for strip 2
       subT = responseInOctets[o] - lastInOctets3[o];
-      Serial.print(subT);
       in3Total += subT;
       lastInOctets3[o] = responseInOctets[o];
     }else if (arrayIndex == 4){ // repeat for strip 2
       subT = responseInOctets[o] - lastInOctets4[o];
-      Serial.print(subT);
       in4Total += subT;
       lastInOctets4[o] = responseInOctets[o];
     }
+
+    if(SNMPDEBUG){
+      Serial.println();
+      Serial.printf("Port %i IN: ", o);
+      Serial.print(subT);
+    }
   }
   // Just to get a line between IN and OUT
-  Serial.println();
+  if(SNMPDEBUG){Serial.println();}
 
-  // Prints and sets the ports OUT data:
+  // Prints and calculates the ports OUT data:
   for (int i = 0; i < arrayCount; ++i) {
     int o = Array[i];
     int subT;
-    Serial.println();
-    Serial.printf("Port %i OUT: ", o);
     if (arrayIndex == 1){
       subT = responseOutOctets[o]-lastOutOctets1[o];
-      Serial.print(subT);
       out1Total += subT;
       lastOutOctets1[o] = responseOutOctets[o];
     }else if (arrayIndex == 2){
       subT = responseOutOctets[o]-lastOutOctets2[o];
-      Serial.print(subT);
       out2Total += subT;
       lastOutOctets2[o] = responseOutOctets[o];
     }else if (arrayIndex == 3){
       subT = responseOutOctets[o]-lastOutOctets3[o];
-      Serial.print(subT);
       out3Total += subT;
       lastOutOctets3[o] = responseOutOctets[o];
     }else if (arrayIndex == 4){
       subT = responseOutOctets[o]-lastOutOctets4[o];
-      Serial.print(subT);
       out4Total += subT;
       lastOutOctets4[o] = responseOutOctets[o];
     }
+    if (SNMPDEBUG) {
+      Serial.println();
+      Serial.printf("Port %i OUT: ", o);
+      Serial.print(subT);
+    }
   }
-  Serial.println();
+  if(SNMPDEBUG){Serial.println();}
 }
 
 void setTotals(int arrayIndex){ // This is where we actually set the variables to pull from in our main.
   if (arrayIndex == 1){
-    arr1Totals[0] = in1Total; // We use arr1Totals for the entire strip 1, IN will be at index 0, and OUT will be at index 1.
-    arr1Totals[1] = out1Total;
+    arrTotals[0][0] = in1Total; // We use arr1Totals for the entire strip 1, IN will be at index 0, and OUT will be at index 1.
+    arrTotals[0][1] = out1Total;
   }else if (arrayIndex == 2){ // Repeat for strip 2
-    arr2Totals[0] = in2Total;
-    arr2Totals[1] = out2Total;
+    arrTotals[1][0] = in2Total;
+    arrTotals[1][1] = out2Total;
   }else if (arrayIndex == 3){ // Repeat for strip 2
-    arr3Totals[0] = in3Total;
-    arr3Totals[1] = out3Total;
+    arrTotals[2][0] = in3Total;
+    arrTotals[2][1] = out3Total;
   }else if (arrayIndex == 4){ // Repeat for strip 2
-    arr4Totals[0] = in4Total;
-    arr4Totals[1] = out4Total;
+    arrTotals[3][0] = in4Total;
+    arrTotals[3][1] = out4Total;
   }
 }
 
@@ -277,18 +273,18 @@ void printVariableFooter()
   lastUptime = currentTime;
   Serial.println();
   // Some debugging information
-  Serial.printf("Strip 1 Averaged, IN: %i  OUT: %i", arr1Totals[0], arr1Totals[1]);
+  Serial.printf("Strip 1 Averaged, IN: %i  OUT: %i", arrTotals[0][0], arrTotals[0][1]);
   Serial.println();
   if (Strip2){
-    Serial.printf("Strip 2 Averaged, IN: %i  OUT: %i", arr2Totals[0], arr2Totals[1]);
+    Serial.printf("Strip 2 Averaged, IN: %i  OUT: %i", arrTotals[1][0], arrTotals[1][1]);
     Serial.println();
   }
   if (Strip3){
-    Serial.printf("Strip 3 Averaged, IN: %i  OUT: %i", arr3Totals[0], arr3Totals[1]);
+    Serial.printf("Strip 3 Averaged, IN: %i  OUT: %i", arrTotals[2][0], arrTotals[2][1]);
     Serial.println();
   }
   if (Strip4){
-    Serial.printf("Strip 4 Averaged, IN: %i  OUT: %i", arr4Totals[0], arr4Totals[1]);
+    Serial.printf("Strip 4 Averaged, IN: %i  OUT: %i", arrTotals[3][0], arrTotals[3][1]);
     Serial.println();
   }
 }

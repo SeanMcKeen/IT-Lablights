@@ -67,7 +67,7 @@ void litArray() {
     previousMillis = currentMillis; // set previous to current so we can check the time passed again in the next frame
 
     // Fade all LEDs, this is to give each LED a trail effect, and must be called each frame
-    fadeAll();
+    fadeToBlackBy(leds, TotalLeds, 100);
 
     // Handle the forward pulse
     for (int i = 0; i < MAX_COMETS; i++) { // creates a pulse as long as there aren't more than the maximum comets/pulses
