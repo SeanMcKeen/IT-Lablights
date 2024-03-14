@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <FastLED.h>
-#include <Wifi.h>
 // This is where we define variables we will use a lot, or need to spread among multiple files. These should be variables the user will change according to their preference.
 
 #if LABLIGHTS // If the build flags include "LABLIGHTS" in platformio.ini
