@@ -48,7 +48,7 @@ void loop() {
     if (intervalBetweenPolls >= pollInterval) {
       pollStart += pollInterval;
       if (SNMPDEBUG) {printVariableHeader();}
-      for (int i = 0; i < 4; ++i) {
+      for (int i = 0; i < NUM_CHANNELS; ++i) {
         if (arrays[i]) {
           snmpLoop(arrays[i], 2, i + 1);
           int InAvg = arrTotals[i][0];
@@ -67,8 +67,8 @@ void loop() {
     }
     for (int i = 0; i < 4; ++i) {
       if (arrays[i]) {
-        sendPulse(forwardColor[i], i + 1, &pulsesSentForward[i], pulsesToSendForward[i], &previousPulseMillis[i*2], outPulseInterval[i], 1);
-        sendPulse(reverseColor[i], i + 1, &pulsesSentReverse[i], pulsesToSendReverse[i], &previousPulseMillis[i*2+1], inPulseInterval[i], 0);
+        sendPulse(forwardColor[i], i + 1, &pulsesSentForward[i], pulsesToSendForward[i], &previousPulseMillis[i*2], outPulseInterval[i], 0);
+        sendPulse(reverseColor[i], i + 1, &pulsesSentReverse[i], pulsesToSendReverse[i], &previousPulseMillis[i*2+1], inPulseInterval[i], 1);
       }
     }
   }

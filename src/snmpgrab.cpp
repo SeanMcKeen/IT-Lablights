@@ -142,19 +142,19 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
     // Some data displays as negative when first uploading, but it balances out after you give it a few polls
 
     if (arrayIndex == 1){ // If on the first strip
-      subT = responseInOctets[o] - lastInOctets1[o]; // We only need lastInOctets variables to be exclusive, response is changed each time so we don't need a response1, 2, etc.
+      subT = responseInOctets[o] - lastInOctets[o]; // We only need lastInOctets variables to be exclusive, response is changed each time so we don't need a response1, 2, etc.
       in1Total += subT; // add the difference to the total, this is what we actually pull from in our main.cpp
       lastInOctets[o] = responseInOctets[o]; // set the last to the response, after this is where response can be redefined and it wont matter.
     }else if (arrayIndex == 2){ // repeat for strip 2
-      subT = responseInOctets[o] - lastInOctets2[o];
+      subT = responseInOctets[o] - lastInOctets[o];
       in2Total += subT;
       lastInOctets[o] = responseInOctets[o];
     }else if (arrayIndex == 3){ // repeat for strip 2
-      subT = responseInOctets[o] - lastInOctets3[o];
+      subT = responseInOctets[o] - lastInOctets[o];
       in3Total += subT;
       lastInOctets[o] = responseInOctets[o];
     }else if (arrayIndex == 4){ // repeat for strip 2
-      subT = responseInOctets[o] - lastInOctets4[o];
+      subT = responseInOctets[o] - lastInOctets[o];
       in4Total += subT;
       lastInOctets[o] = responseInOctets[o];
     }
@@ -173,19 +173,19 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
     int o = Array[i];
     int subT;
     if (arrayIndex == 1){
-      subT = responseOutOctets[o]-lastOutOctets1[o];
+      subT = responseOutOctets[o]-lastOutOctets[o];
       out1Total += subT;
       lastOutOctets[o] = responseOutOctets[o];
     }else if (arrayIndex == 2){
-      subT = responseOutOctets[o]-lastOutOctets2[o];
+      subT = responseOutOctets[o]-lastOutOctets[o];
       out2Total += subT;
       lastOutOctets[o] = responseOutOctets[o];
     }else if (arrayIndex == 3){
-      subT = responseOutOctets[o]-lastOutOctets3[o];
+      subT = responseOutOctets[o]-lastOutOctets[o];
       out3Total += subT;
       lastOutOctets[o] = responseOutOctets[o];
     }else if (arrayIndex == 4){
-      subT = responseOutOctets[o]-lastOutOctets4[o];
+      subT = responseOutOctets[o]-lastOutOctets[o];
       out4Total += subT;
       lastOutOctets[o] = responseOutOctets[o];
     }

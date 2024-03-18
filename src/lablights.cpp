@@ -109,7 +109,7 @@ void litArray() {
 }
 
 void pulseEvent(CRGB color, int strip, int direction) { 
-  bool reverse = (direction == 1) ? true : false;
+  bool reverse = (direction == 1) ? true : false; // reverse/in is 1, forward/out is 0
   int ledPosition;
   
   for (int i = 0; i < MAX_COMETS; i++) {
