@@ -1,11 +1,7 @@
-#include "vector"
+extern int arrTotals[4][2];
 
-extern unsigned long long int arrINTotals[];
-extern unsigned long long int arrOUTTotals[];
-extern unsigned int lastUptime;
-
-void SNMPsetup(const std::vector<int>& Array);
-void snmpLoop(const std::vector<int>& Array);
+void SNMPsetup(int Array[], int sizeOfArray);
+void snmpLoop(int Array[], int arrayCount, int arrayIndex);
 void printVariableHeader();
-void updateSNMPUptime();
+void printVariableFooter();
 void callLoop();

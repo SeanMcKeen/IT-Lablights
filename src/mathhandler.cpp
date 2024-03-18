@@ -1,14 +1,14 @@
 #include "FastLED.h"
 
 int calcSNMPPulses(unsigned long Avg) {
-    // if (Avg >= 1 && Avg <= 100000) {
-    //     // Map Avg values in the range [1, 100000] to the range [1, 5]
-    //     return round(1 + 4 * ((double)Avg / 100000));
-    // } else if (Avg > 100000 && Avg <= 1000000) {
-    //     // Map Avg values in the range (100000, 1000000] to the range [6, 10]
-    //     return round(6 + 4 * ((double)Avg - 100000) / 900000);
-    // }
-    // // Return a default value or handle other cases as necessary
+    if (Avg >= 1 && Avg <= 100000) {
+        // Map Avg values in the range [1, 100000] to the range [1, 5]
+        return round(1 + 4 * ((double)Avg / 100000));
+    } else if (Avg > 100000 && Avg <= 1000000) {
+        // Map Avg values in the range (100000, 1000000] to the range [6, 10]
+        return round(6 + 4 * ((double)Avg - 100000) / 900000);
+    }
+    // Return a default value or handle other cases as necessary
     return 1;
 }
 
