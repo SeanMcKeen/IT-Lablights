@@ -1,2 +1,0 @@
-void setupDisplay();
-void refreshScreen();
