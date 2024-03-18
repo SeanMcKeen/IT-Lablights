@@ -37,20 +37,14 @@ const int numberOfPorts = NUM_PORTS; // Set this to the desired number of ports,
 const char *oidSysName = ".1.3.6.1.2.1.1.5.0";       // This is the OID string we query to get the system name (SysName) of the Switch. 
 const char *oidUptime = ".1.3.6.1.2.1.1.3.0";        // This OID gets us the uptime of the Switch (hundredths of seconds)
 
-unsigned int responseInOctets[numberOfPorts] = {0};  // This will create a resizable array as big as the numberOfPorts we want to poll established above.
-unsigned int responseOutOctets[numberOfPorts] = {0}; // We need arrays for in and out. 
+unsigned int responseInOctets[numberOfPorts+1] = {0};  // This will create a resizable array as big as the numberOfPorts we want to poll established above.
+unsigned int responseOutOctets[numberOfPorts+1] = {0}; // We need arrays for in and out. 
 
-int lastOutOctets1[numberOfPorts] = {0};     // The 'response' arrays will store the data we get from our query, and the 'last' arrays store the value
-int lastInOctets1[numberOfPorts] = {0};      // from the last time it was polled so we can compare against.
-int lastOutOctets2[numberOfPorts] = {0};     // Need an IN and OUT for each strip
-int lastInOctets2[numberOfPorts] = {0};
-int lastOutOctets3[numberOfPorts] = {0};
-int lastInOctets3[numberOfPorts] = {0};
-int lastOutOctets4[numberOfPorts] = {0};
-int lastInOctets4[numberOfPorts] = {0};
+int lastOutOctets[numberOfPorts+1] = {0};     // The 'response' arrays will store the data we get from our query, and the 'last' arrays store the value
+int lastInOctets[numberOfPorts+1] = {0};      // from the last time it was polled so we can compare against.
 
-const char* oidInOctets1[Array1Count];  // We will need to populate this array with the OID strings for the ifInOctets (and out) for each of our ports
-const char* oidOutOctets1[Array1Count]; // and we have to do that in setup
+const char* oidInOctets[numberOfPorts+1];  // We will need to populate this array with the OID strings for the ifInOctets (and out) for each of our ports
+const char* oidOutOctets[numberOfPorts+1]; // and we have to do that in setup
 
 
 char sysName[50]; // empty string thats big enough for 50 characters I guess
@@ -73,7 +67,7 @@ int out3Total = 0;
 int in4Total = 0;
 int out4Total = 0;
 
-int arrTotals[4][2];
+int arrTotals[NUM_CHANNELS][2];
 
 // SNMP Objects
 WiFiUDP udp;                                           // UDP object used to send and receive packets
@@ -108,10 +102,10 @@ void SNMPsetup(int Array[], int arrayCount)
     std::string oidInStr = ".1.3.6.1.2.1.2.2.1.10." + std::to_string(o); // create the list of inOids 
     std::string oidOutStr = ".1.3.6.1.2.1.2.2.1.16." + std::to_string(o); // create the list of outOids
     // why is there a 1 in these? oidInOctets1?  Mr D
-    oidInOctets1[o] = oidInStr.c_str();
-    oidOutOctets1[o] = oidOutStr.c_str();
-    callbackInOctets[o]= snmp.addCounter32Handler(Switch, oidInOctets1[o], &responseInOctets[o]); // create callbacks array for the OID
-    callbackOutOctets[o]= snmp.addCounter32Handler(Switch, oidOutOctets1[o], &responseOutOctets[o]); // create callbacks array for the OID
+    oidInOctets[o] = oidInStr.c_str();
+    oidOutOctets[o] = oidOutStr.c_str();
+    callbackInOctets[o]= snmp.addCounter32Handler(Switch, oidInOctets[o], &responseInOctets[o]); // create callbacks array for the OID
+    callbackOutOctets[o]= snmp.addCounter32Handler(Switch, oidOutOctets[o], &responseOutOctets[o]); // create callbacks array for the OID
   }
   callbackSysName = snmp.addStringHandler(Switch, oidSysName, &sysNameResponse);
   callbackUptime = snmp.addTimestampHandler(Switch, oidUptime, &uptime);
@@ -150,19 +144,19 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
     if (arrayIndex == 1){ // If on the first strip
       subT = responseInOctets[o] - lastInOctets1[o]; // We only need lastInOctets variables to be exclusive, response is changed each time so we don't need a response1, 2, etc.
       in1Total += subT; // add the difference to the total, this is what we actually pull from in our main.cpp
-      lastInOctets1[o] = responseInOctets[o]; // set the last to the response, after this is where response can be redefined and it wont matter.
+      lastInOctets[o] = responseInOctets[o]; // set the last to the response, after this is where response can be redefined and it wont matter.
     }else if (arrayIndex == 2){ // repeat for strip 2
       subT = responseInOctets[o] - lastInOctets2[o];
       in2Total += subT;
-      lastInOctets2[o] = responseInOctets[o];
+      lastInOctets[o] = responseInOctets[o];
     }else if (arrayIndex == 3){ // repeat for strip 2
       subT = responseInOctets[o] - lastInOctets3[o];
       in3Total += subT;
-      lastInOctets3[o] = responseInOctets[o];
+      lastInOctets[o] = responseInOctets[o];
     }else if (arrayIndex == 4){ // repeat for strip 2
       subT = responseInOctets[o] - lastInOctets4[o];
       in4Total += subT;
-      lastInOctets4[o] = responseInOctets[o];
+      lastInOctets[o] = responseInOctets[o];
     }
 
     if(SNMPDEBUG){
@@ -181,19 +175,19 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
     if (arrayIndex == 1){
       subT = responseOutOctets[o]-lastOutOctets1[o];
       out1Total += subT;
-      lastOutOctets1[o] = responseOutOctets[o];
+      lastOutOctets[o] = responseOutOctets[o];
     }else if (arrayIndex == 2){
       subT = responseOutOctets[o]-lastOutOctets2[o];
       out2Total += subT;
-      lastOutOctets2[o] = responseOutOctets[o];
+      lastOutOctets[o] = responseOutOctets[o];
     }else if (arrayIndex == 3){
       subT = responseOutOctets[o]-lastOutOctets3[o];
       out3Total += subT;
-      lastOutOctets3[o] = responseOutOctets[o];
+      lastOutOctets[o] = responseOutOctets[o];
     }else if (arrayIndex == 4){
       subT = responseOutOctets[o]-lastOutOctets4[o];
       out4Total += subT;
-      lastOutOctets4[o] = responseOutOctets[o];
+      lastOutOctets[o] = responseOutOctets[o];
     }
     if (SNMPDEBUG) {
       Serial.println();
@@ -211,10 +205,10 @@ void setTotals(int arrayIndex){ // This is where we actually set the variables t
   }else if (arrayIndex == 2){ // Repeat for strip 2
     arrTotals[1][0] = in2Total;
     arrTotals[1][1] = out2Total;
-  }else if (arrayIndex == 3){ // Repeat for strip 2
+  }else if (arrayIndex == 3){ // Repeat for strip 3
     arrTotals[2][0] = in3Total;
     arrTotals[2][1] = out3Total;
-  }else if (arrayIndex == 4){ // Repeat for strip 2
+  }else if (arrayIndex == 4){ // Repeat for strip 4
     arrTotals[3][0] = in4Total;
     arrTotals[3][1] = out4Total;
   }
