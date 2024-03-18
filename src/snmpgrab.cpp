@@ -31,10 +31,6 @@ const int snmpVersion = 1; // SNMP Version 1 = 0, SNMP Version 2 = 1
 const int numberOfPorts = NUM_PORTS; // Set this to the desired number of ports, e.g., 48 in this case
 // CAUTION: We seem to hit a maximum of how many ports can be polled at one time (30). if you experience device reboots, you are probably asking for too many OIDs
 
-const int Array1Count = NUMOFPORTS1;
-// How often should you poll the device? 
-// int pollInterval = POLL_DELAY; // polling interval (delay) in milliseconds - 1000 = 1 second
-
 // Now we set up our OID (Object Identifiers) variables for the items we want to query on our Switch
 // If you don't know what SNMP, MIBs and OIDs are, you can learn more about them here https://www.paessler.com/info/snmp_mibs_and_oids_an_overview
 // We'll use arrays for some to store the multiple values of our lastInOctets, responseInOctets and oids
