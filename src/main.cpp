@@ -19,7 +19,6 @@ CRGB reverseColor[4] = {CRGB::Blue};
 #include "lablights.h"
 #include "mathhandler.h"
 #include "numsim.h"
-#include "display.h"
 #endif
 
 int arrays[4][2];
