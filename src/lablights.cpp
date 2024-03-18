@@ -1,6 +1,6 @@
 #include "FastLED.h"
 #include "globals.h"
-#include "random"
+#include "mathhandler.h"
 
 // Add the number of channels because if you have 4 channels you need 4 "gaps" or spaces that dont exist
 const int TotalLeds = NUM_LEDS + NUM_LEDS2 + NUM_LEDS3 + NUM_LEDS4 + NUM_CHANNELS;
@@ -27,7 +27,7 @@ CRGB reverseColors[MAX_COMETS];
 #endif
 
 // The "Splitpoints" as I like to call them, establish a location in leds[] that doesn't exist on our strips, that way we can use these gaps as the endings for each strip
-// EX: when the first strip comet hits LedSplit1 it will reset to the position of -1 (our reset point). Without these gaps the strip would show an unlit LED at the end of the strip.
+// EX: when the first strip comet hits LedSplit1 it will reset to the position of -1 (our reset point). Without these gaps the strip would show a lit LED randomly on the strip.
 
 int LedSplit1 = NUM_LEDS + 1;
 int LedSplit2 = LedSplit1 + NUM_LEDS2 + 1;
@@ -38,6 +38,8 @@ int LedStart1 = 0;
 int LedStart2 = LedSplit1+1;
 int LedStart3 = LedSplit2+1;
 int LedStart4 = LedSplit3+1;
+
+// int specialSplitPoint = 15;
 
 unsigned long previousMillis = 0;
 const long interval = SPEED;
@@ -67,7 +69,7 @@ void litArray() {
     previousMillis = currentMillis; // set previous to current so we can check the time passed again in the next frame
 
     // Fade all LEDs, this is to give each LED a trail effect, and must be called each frame
-    fadeAll();
+    fadeToBlackBy(leds, TotalLeds, 255*0.33);
 
     // Handle the forward pulse
     for (int i = 0; i < MAX_COMETS; i++) { // creates a pulse as long as there aren't more than the maximum comets/pulses
@@ -80,6 +82,11 @@ void litArray() {
         if (currentlyLitLedsForward[i] > TotalLeds || currentlyLitLedsForward[i] == LedSplit1 || currentlyLitLedsForward[i] == LedSplit2 || currentlyLitLedsForward[i] == LedSplit3) { // Check to see if it's gone to the end of the strip, then reset the comet
           currentlyLitLedsForward[i] = -1; // From what I understand, -1 does not appear on the strip unlike 0, so we use that as the "reset" point
         }
+        // if (currentlyLitLedsForward[i] == specialSplitPoint) {
+        //   if (randomZeroOrOne() == 1) {
+        //     currentlyLitLedsForward[i] = 45;
+        //   }
+        // }
       }
     }
 
@@ -98,16 +105,6 @@ void litArray() {
     }
 
     FastLED.show(); // This is what actually makes the data we defined above appear on the strip.
-  }
-}
-
-void fadeAll() { // This is a global fade, there's no way to individually fade pulses correctly.
-  // Fade out all LEDs
-  for (int i = 0; i < TotalLeds; i++) { // We call fade out BEFORE establishing the pulse so that only the trail is being faded and not the head of the pulse.
-  // Fades the color by an equal amount, that way the color appears the same while becomming dimmer. Note: do NOT use brightness to accomplish this as brightness is global to the entire strip and cannot be used for a single pulse.
-    if (leds[i].r > 0) leds[i].r -= leds[i].r*.33;
-    if (leds[i].g > 0) leds[i].g -= leds[i].g*.33;
-    if (leds[i].b > 0) leds[i].b -= leds[i].b*.33;
   }
 }
 

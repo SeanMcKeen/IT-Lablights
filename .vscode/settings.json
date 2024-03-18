@@ -340,5 +340,6 @@
     "locale": "cpp",
     "queue": "cpp",
     "cstdbool": "cpp"
-  }
+  },
+  "C_Cpp.errorSquiggles": "disabled"
 }

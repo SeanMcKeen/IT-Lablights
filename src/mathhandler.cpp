@@ -1,4 +1,5 @@
 #include "FastLED.h"
+#include <cstdlib>   // Include the <cstdlib> header for the rand() function
 
 int calcSNMPPulses(unsigned long Avg) {
     if (Avg >= 1 && Avg <= 100000) {
@@ -42,4 +43,8 @@ CRGB calcPulseColor2(unsigned long Avg) { // This is to have similar, but not ex
     }else{
         return CRGB(16736315);
     }
+}
+
+int randomZeroOrOne() {
+    return rand() % 2; // Returns either 0 or 1
 }
