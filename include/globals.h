@@ -13,7 +13,7 @@
     #define SWITCH_IP       IPAddress(192,168,2,14) // IP address of the switch you're targeting
     #define NUM_PORTS       48 // Number of ports on the switch
     #define POLL_DELAY      10000 // 10 seconds
-    #define SNMPDEBUG       1
+    #define SNMPDEBUG       0
 
     #define BRIGHTNESS      100 // default is 64; MAX: 255
     #define NUM_CHANNELS    4 // number of strips being used (currently has no importance)
