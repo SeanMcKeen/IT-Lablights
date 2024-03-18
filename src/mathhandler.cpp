@@ -4,7 +4,7 @@
 int calcSNMPPulses(unsigned long Avg) {
     if (Avg >= 1 && Avg <= 100000) {
         // Map Avg values in the range [1, 100000] to the range [1, 4]
-        return round(1 + 3 * ((double)Avg / 100000));
+        return round(1 + 3 * ((double)Avg / 100000)); // round(MIN Pulses + MAX Pulses - MIN Pulses * ((double)Avg / Max DATA Value)))
     } else if (Avg > 100000 && Avg <= 1000000) {
         // Map Avg values in the range (100000, 1000000] to the range [5, 7]
         return round(5 + 2 * ((double)Avg - 100000) / 900000);
