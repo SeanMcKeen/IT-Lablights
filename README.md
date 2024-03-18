@@ -3,25 +3,17 @@
 <head>
 </head>
 
-<h1 align="center">SNMP Lablights Project</h1>
+<h1 align="center">SNMPLess Lablights Project</h1>
 <p>This Project is intended for my personal use and was made solely by me, others may use it for their own purposes if they find it useful.</p>
+<p>This README is currently NOT up to date, please keep in mind that some functions change so quickly in the code that I can't constantly update this.</p>
 
 <h2>Overview</h2>
-This Project is an fully configurable LED project that uses SNMP data in order to display lights that show network traffic. 
-Currently pulses have a small trail effect, and can go forward and backward on the strip with Independant data. 
-This means that your first strip can show network traffic on a set list of ports, and the next strip can use another list of ports. 
-This is a seamless process and you will see no lag on your lights while it's polling SNMP. 
-Also, it will not pollute or spam your switch as long as the delay is set at 10 or more seconds. 
-(You may be able to go less, but I wouldn't recommend it).
-
-<h2>Roadmap</h2>
-Eventually I intend to add display/screen functionality for devices like the lilygo and m5stick-c, but as of right now that is a low priority.
-<p></p>
+This Project is a fork of the main branch in which the snmp functionality has been removed. This is for those who like the look of the lights
+and do not want to poll snmp data for it. All data is simulated to LOOK like network traffic, but none of it is real
 
 <h2>Some Important Functions</h2>
 <div class="box">
-  <pre><h2>snmpgrab.h</h2><b>void SNMPsetup(int Array[])</b> -- <i>Sets up a list of ports that you will be pulling data from.</i>
-<b>void snmpLoop(int Array[], int arrayCount, int arrayIndex)</b> -- <i>Calculates the average difference in data since the last poll coming IN and OUT of the switch.</i>
+  <pre>
 <b>void printVariableHeader()</b> -- <i>Prints switch name & uptime to serial monitor.</i>
 <b>void printVariableFooter()</b> -- <i>Prints elapsed time between polls and summary of data.</i>
 <b>void callLoop</b> -- <i>Should be called as often as possible according to SNMP library documentation</i>
@@ -32,7 +24,7 @@ Eventually I intend to add display/screen functionality for devices like the lil
 <b>void reverseEvent(CRGB rColor, int strip)</b> -- <i>Sends a pulse towards the beginning from the end of the strip.</i>
 
 <h2>mathhandler.cpp handles the data thresholds for colors and pulse amounts, change it to your liking.</h2>
-</pre>
+  </pre>
 </div>
 
 <h2>Other Important Info</h2>

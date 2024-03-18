@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <FastLED.h>
-#include <Wifi.h>
 // This is where we define variables we will use a lot, or need to spread among multiple files. These should be variables the user will change according to their preference.
 
 #if LABLIGHTS // If the build flags include "LABLIGHTS" in platformio.ini
@@ -38,4 +37,9 @@
 
     #define LED_TYPE        WS2812B // Almost no clue what this means, the type of leds being used or something
     #define COLOR_ORDER     RGB // Currently affects nothing
+
+    #define Strip1Ports     {1,2} // These are for demonstration purposes only, they do not affect anything as the data is simulated.
+    #define Strip2Ports     {3,4}
+    #define Strip3Ports     {5,6}
+    #define Strip4Ports     {7,8}
 #endif

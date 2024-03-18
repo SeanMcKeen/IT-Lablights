@@ -31,7 +31,7 @@ void setup() {
   if (PROJECT_NAME == "Lablights") {
     Serial.begin(115200);
     initFastLED();
-    setupDisplay();
+    // setupDisplay();
     initSim();
   }
 }
@@ -42,7 +42,7 @@ void loop() {
     intervalBetweenPolls = millis() - pollStart;
     if (intervalBetweenPolls >= pollInterval) {
       pollStart += pollInterval;
-      refreshScreen();
+      // refreshScreen();
       simulateTraffic();
       for (int i = 0; i < 4; ++i) {
           int InAvg = arrTotals[i][0];
