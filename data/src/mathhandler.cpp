@@ -12,9 +12,10 @@ int calcSNMPPulses(unsigned long Avg) {
         // Map Avg values in the range (1000000, 10000000] to the range [8, 10]
         return round(8 + 2 * ((double)Avg - 1000000) / 9000000);
     } else if (Avg > 10000000) {
-        // Handle values greater than 10,000,000, return a default value or handle as necessary
+        // Handle values greater than 10,000,000
         return 10;
     }
+    // Return a default value or handle as necessary
     return 1;
 }
 

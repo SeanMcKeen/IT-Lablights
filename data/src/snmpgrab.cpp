@@ -67,6 +67,7 @@ int out3Total = 0;
 int in4Total = 0;
 int out4Total = 0;
 
+int tempArrTotals[NUM_CHANNELS][2];
 int arrTotals[NUM_CHANNELS][2];
 
 // SNMP Objects
@@ -123,41 +124,18 @@ void snmpLoop(int Array[], int arrayCount, int arrayIndex){ // the port array, t
 }
 
 void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
-  in1Total = 0; // Reset all Total variables so that the current data isn't mixing with the last poll.
-  in2Total = 0;
-  in3Total = 0;
-  in4Total = 0;
+  // Reset all Total variables so that the current data isn't mixing with the last poll.
+  tempArrTotals[arrayIndex-1][0] = 0;
+  tempArrTotals[arrayIndex-1][1] = 0;
 
-  out1Total = 0;
-  out2Total = 0;
-  out3Total = 0;
-  out4Total = 0;
-
+  // Prints and calculates the ports IN data:
   for (int i = 0; i < arrayCount; i++) {
     int o = Array[i]; // i counts from 0 to the maximum in our array - 1, so Array[i] gives us each number in the array we pass to the function.
-
     int subT; // to store the difference between response and last response
 
-    // Debugging: Print the values to help identify issues
-    // Some data displays as negative when first uploading, but it balances out after you give it a few polls
-
-    if (arrayIndex == 1){ // If on the first strip
-      subT = responseInOctets[o] - lastInOctets[o]; // We only need lastInOctets variables to be exclusive, response is changed each time so we don't need a response1, 2, etc.
-      in1Total += subT; // add the difference to the total, this is what we actually pull from in our main.cpp
-      lastInOctets[o] = responseInOctets[o]; // set the last to the response, after this is where response can be redefined and it wont matter.
-    }else if (arrayIndex == 2){ // repeat for strip 2
-      subT = responseInOctets[o] - lastInOctets[o];
-      in2Total += subT;
-      lastInOctets[o] = responseInOctets[o];
-    }else if (arrayIndex == 3){ // repeat for strip 2
-      subT = responseInOctets[o] - lastInOctets[o];
-      in3Total += subT;
-      lastInOctets[o] = responseInOctets[o];
-    }else if (arrayIndex == 4){ // repeat for strip 2
-      subT = responseInOctets[o] - lastInOctets[o];
-      in4Total += subT;
-      lastInOctets[o] = responseInOctets[o];
-    }
+    subT = responseInOctets[o] - lastInOctets[o];
+    tempArrTotals[arrayIndex-1][0] += subT;
+    lastInOctets[o] = responseInOctets[o]; // set the last to the response, after this is where response can be redefined and it wont matter.
 
     if(SNMPDEBUG){
       Serial.println();
@@ -165,6 +143,7 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
       Serial.print(subT);
     }
   }
+
   // Just to get a line between IN and OUT
   if(SNMPDEBUG){Serial.println();}
 
@@ -172,46 +151,24 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
   for (int i = 0; i < arrayCount; ++i) {
     int o = Array[i];
     int subT;
-    if (arrayIndex == 1){
-      subT = responseOutOctets[o]-lastOutOctets[o];
-      out1Total += subT;
-      lastOutOctets[o] = responseOutOctets[o];
-    }else if (arrayIndex == 2){
-      subT = responseOutOctets[o]-lastOutOctets[o];
-      out2Total += subT;
-      lastOutOctets[o] = responseOutOctets[o];
-    }else if (arrayIndex == 3){
-      subT = responseOutOctets[o]-lastOutOctets[o];
-      out3Total += subT;
-      lastOutOctets[o] = responseOutOctets[o];
-    }else if (arrayIndex == 4){
-      subT = responseOutOctets[o]-lastOutOctets[o];
-      out4Total += subT;
-      lastOutOctets[o] = responseOutOctets[o];
-    }
+
+    subT = responseInOctets[o] - lastInOctets[o];
+    tempArrTotals[arrayIndex-1][0] += subT;
+    lastInOctets[o] = responseInOctets[o]; // set the last to the response, after this is where response can be redefined and it wont matter.
+
     if (SNMPDEBUG) {
       Serial.println();
       Serial.printf("Port %i OUT: ", o);
       Serial.print(subT);
     }
   }
+
   if(SNMPDEBUG){Serial.println();}
 }
 
 void setTotals(int arrayIndex){ // This is where we actually set the variables to pull from in our main.
-  if (arrayIndex == 1){
-    arrTotals[0][0] = in1Total; // We use arr1Totals for the entire strip 1, IN will be at index 0, and OUT will be at index 1.
-    arrTotals[0][1] = out1Total;
-  }else if (arrayIndex == 2){ // Repeat for strip 2
-    arrTotals[1][0] = in2Total;
-    arrTotals[1][1] = out2Total;
-  }else if (arrayIndex == 3){ // Repeat for strip 3
-    arrTotals[2][0] = in3Total;
-    arrTotals[2][1] = out3Total;
-  }else if (arrayIndex == 4){ // Repeat for strip 4
-    arrTotals[3][0] = in4Total;
-    arrTotals[3][1] = out4Total;
-  }
+  arrTotals[arrayIndex-1][0] = tempArrTotals[arrayIndex-1][0];
+  arrTotals[arrayIndex-1][1] = tempArrTotals[arrayIndex-1][1];
 }
 
 void getInSNMP(int Array[], int arrayCount) // This is a lot of stuff I don't understand, so just research snmp coding and you might understand.
