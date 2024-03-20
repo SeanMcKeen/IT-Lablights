@@ -5,7 +5,6 @@
 int pollInterval = POLL_DELAY;
 int pollTiming = pollInterval / 1000;
 unsigned long pollStart = 0;
-unsigned long intervalBetweenPolls = 0;
 unsigned long inPulseInterval[4] = {0};
 unsigned long outPulseInterval[4] = {0};
 unsigned long previousPulseMillis[8] = {0};
@@ -16,11 +15,15 @@ unsigned int pulsesSentReverse[4] = {0};
 CRGB forwardColor[4] = {CRGB::Blue};
 CRGB reverseColor[4] = {CRGB::Blue};
 
+int blinkDelay = 500;
+unsigned long prevBlink = 0;
+
 #if LABLIGHTS
-#include <enablewifi.h>
-#include <snmpgrab.h>
-#include <lablights.h>
-#include <mathhandler.h>
+#include "enablewifi.h"
+#include "snmpgrab.h"
+#include "lablights.h"
+#include "mathhandler.h"
+#include "cloudserver.h"
 #endif
 
 int arrays[4][2] = {ARRAY_1, ARRAY_2, ARRAY_3, ARRAY_4};
@@ -28,6 +31,7 @@ int arrays[4][2] = {ARRAY_1, ARRAY_2, ARRAY_3, ARRAY_4};
 void sendPulse(CRGB color, int strip, unsigned int *pulsesSentVar, int pulsesMaxSend, unsigned long *prevMillisOfPulse, unsigned long interval, int direction);
 
 void setup() {
+  pinMode(PIN_BL, OUTPUT);
   if (PROJECT_NAME == "Lablights") {
     Serial.begin(115200);
     WifiBegin();
@@ -37,6 +41,7 @@ void setup() {
       }
     }
     initFastLED();
+    webServSetup();
   }
 }
 
@@ -44,8 +49,14 @@ void loop() {
   if (PROJECT_NAME == "Lablights") {
     litArray();
     callLoop();
-    intervalBetweenPolls = millis() - pollStart;
-    if (intervalBetweenPolls >= pollInterval) {
+    serverLoop(); // web server on http://esp32.local
+
+    if (millis() - prevBlink >= blinkDelay) {
+      digitalWrite(PIN_BL, !digitalRead(PIN_BL));
+      prevBlink = millis();
+    }
+
+    if (millis() - pollStart >= pollInterval) {
       pollStart += pollInterval;
       if (SNMPDEBUG) {printVariableHeader();}
       for (int i = 0; i < NUM_CHANNELS; ++i) {

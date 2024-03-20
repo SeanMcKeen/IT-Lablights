@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include <Wifi.h>
+#include "pinouts.h"
+
 // This is where we define variables we will use a lot, or need to spread among multiple files. These should be variables the user will change according to their preference.
 
 #if LABLIGHTS // If the build flags include "LABLIGHTS" in platformio.ini
@@ -26,22 +28,21 @@
  // adjust NUM_LEDS according to your strip sizes
 
     #define DATA_PIN1        10
-    #define NUM_LEDS         31 
+    #define NUM_LEDS         80 
 
     #define DATA_PIN2        13
-    #define NUM_LEDS2        31 
+    #define NUM_LEDS2        290 
 
     #define DATA_PIN3        11
-    #define NUM_LEDS3        31 
+    #define NUM_LEDS3        250 
 
     #define DATA_PIN4        12
-    #define NUM_LEDS4        31 
+    #define NUM_LEDS4        29 
 
-    #define LED_TYPE        WS2812B // Almost no clue what this means, the type of leds being used or something
-    #define COLOR_ORDER     RGB // Currently affects nothing
+    #define LED_TYPE        WS2811 // Almost no clue what this means, the type of leds being used or something
 
     #define ARRAY_1         {1,2} // an array of ports you want to be checked for snmp data
-    #define ARRAY_2         {3,4}
-    #define ARRAY_3         {5,6}
+    #define ARRAY_2         {42,43}
+    #define ARRAY_3         {17,19}
     #define ARRAY_4         {7,8}
 #endif
