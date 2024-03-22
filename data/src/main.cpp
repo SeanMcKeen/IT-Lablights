@@ -2,6 +2,8 @@
 #include <secrets.h>
 #include <vector>
 #include <iostream>
+#include <esp_log.h>
+
 
 #if LABLIGHTS
 #include "enablewifi.h"
@@ -29,6 +31,8 @@ CRGB reverseColor[4] = {CRGB::Blue};
 int blinkDelay = 500;
 unsigned long prevBlink = 0;
 
+bool snmpLoopFinished = false; // Declare a flag variable
+
 std::vector<int> arrays;
 
 void sendPulse(CRGB color, int strip, unsigned int *pulsesSentVar, int pulsesMaxSend, unsigned long *prevMillisOfPulse, unsigned long interval, int direction);
@@ -52,8 +56,9 @@ void loop() {
     callLoop();
     // serverLoop(); // web server on http://esp32.local
 
+
     if (millis() - prevBlink >= blinkDelay) {
-      digitalWrite(PIN_BL, !digitalRead(PIN_BL));
+      // digitalWrite(PIN_BL, !digitalRead(PIN_BL));
       prevBlink = millis();
     }
 
@@ -61,7 +66,12 @@ void loop() {
       pollStart = millis();
       if (SNMPDEBUG) {printVariableHeader();}
 
+      if (!heap_caps_check_integrity(MALLOC_CAP_8BIT, true)) {
+        ESP_LOGE("thing","Heap integrity check failed!");
+      }
+
       snmpLoop(arrays);
+      snmpLoopFinished = true;
 
       for (int i = 0; i < NUM_CHANNELS; ++i) {
         int InAvg = arrTotals[i][0];
@@ -76,11 +86,13 @@ void loop() {
         pulsesSentReverse[i] = 0;
       }
       if (SNMPDEBUG) {printVariableFooter();}
-    }else {
-      for (int i = 0; i < 4; ++i) {
+    }
+    if (snmpLoopFinished) {
+      for (int i = 0; i < NUM_CHANNELS; ++i) {
         sendPulse(forwardColor[i], i, &pulsesSentForward[i], pulsesToSendForward[i], &previousPulseMillis[i*2], outPulseInterval[i], 0);
         sendPulse(reverseColor[i], i, &pulsesSentReverse[i], pulsesToSendReverse[i], &previousPulseMillis[i*2+1], inPulseInterval[i], 1);
       }
+      snmpLoopFinished = false;
     }
   }
 }

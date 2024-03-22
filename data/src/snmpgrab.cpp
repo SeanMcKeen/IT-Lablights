@@ -18,10 +18,6 @@ You will need to add your wifi SSID and password, as well as the IP address of y
 #include <lablights.h>
 #endif
 
-// Your WiFi info 
-const char *ssid = "ITLAB";
-const char *password = "letmeinnow";
-
 // Insert your SNMP Device Info 
 IPAddress Switch(SWITCH_IP);  // must capitalize the letter S for our variable
 const char *community = "public"; // if different from the default of "public"
@@ -40,8 +36,8 @@ const char *oidUptime = ".1.3.6.1.2.1.1.3.0";        // This OID gets us the upt
 unsigned int responseInOctets[numberOfPorts+1] = {0};  // This will create a resizable array as big as the numberOfPorts we want to poll established above.
 unsigned int responseOutOctets[numberOfPorts+1] = {0}; // We need arrays for in and out. 
 
-int lastOutOctets[numberOfPorts+1] = {0};     // The 'response' arrays will store the data we get from our query, and the 'last' arrays store the value
-int lastInOctets[numberOfPorts+1] = {0};      // from the last time it was polled so we can compare against.
+unsigned int lastOutOctets[numberOfPorts+1] = {0};     // The 'response' arrays will store the data we get from our query, and the 'last' arrays store the value
+unsigned int lastInOctets[numberOfPorts+1] = {0};      // from the last time it was polled so we can compare against.
 
 const char* oidInOctets[numberOfPorts+1];  // We will need to populate this array with the OID strings for the ifInOctets (and out) for each of our ports
 const char* oidOutOctets[numberOfPorts+1]; // and we have to do that in setup
@@ -105,6 +101,7 @@ void snmpLoop(const std::vector<int>& ports){ // the port array, the amount of v
   getOutSNMP(ports);
   handleAllOutputs(ports);
   setTotals();
+  digitalWrite(PIN_BL, !digitalRead(PIN_BL));
 }
 
 void handleAllOutputs(const std::vector<int>& ports){
@@ -163,6 +160,7 @@ void setTotals(){ // This is where we actually set the variables to pull from in
 
 void getInSNMP(const std::vector<int>& ports) // This is a lot of stuff I don't understand, so just research snmp coding and you might understand.
 {
+
   for (int port : ports) {
     snmpRequest.addOIDPointer(callbackInOctets[port]);
   }
