@@ -9,10 +9,10 @@ You will need to add your wifi SSID and password, as well as the IP address of y
 //#include "Arduino.h"
 #include "WiFi.h" // ESP32 Core Wifi Library
 #include <WiFiUdp.h> // enables UDP protocol
-#include <Arduino_SNMP_Manager.h> 
-#include <snmpgrab.h>
+#include <Arduino_SNMP_Manager.h>
 #include <globals.h>
 #include <mathhandler.h>
+#include <vector>
 
 #if LABLIGHTS
 #include <lablights.h>
@@ -46,67 +46,51 @@ int lastInOctets[numberOfPorts+1] = {0};      // from the last time it was polle
 const char* oidInOctets[numberOfPorts+1];  // We will need to populate this array with the OID strings for the ifInOctets (and out) for each of our ports
 const char* oidOutOctets[numberOfPorts+1]; // and we have to do that in setup
 
-
-char sysName[50]; // empty string thats big enough for 50 characters I guess
+char sysName[11]; // empty string thats big enough for 50 characters I guess
 char *sysNameResponse = sysName; // will be replaced once we get a response
 unsigned int uptime = 0; 
 unsigned int lastUptime = 0; 
-// unsigned long pollStart = 0;
-// unsigned long intervalBetweenPolls = 0;
-int in1Total = 0;
-int out1Total = 0;
 
-// We'll leave these established as it wont really affect speed, and would cause issues to try to IF define them.
-// Need a block for each strip
-int in2Total = 0;
-int out2Total = 0;
-
-int in3Total = 0;
-int out3Total = 0;
-
-int in4Total = 0;
-int out4Total = 0;
-
-int tempArrTotals[NUM_CHANNELS][2];
-int arrTotals[NUM_CHANNELS][2];
+int tempArrTotals[NUM_CHANNELS][2] = {{0}};
+int arrTotals[NUM_CHANNELS][2] = {{0}};
 
 // SNMP Objects
 WiFiUDP udp;                                           // UDP object used to send and receive packets
 SNMPManager snmp = SNMPManager(community);             // Starts an SNMPManager to listen to replies to get-requests
 SNMPGet snmpRequest = SNMPGet(community, snmpVersion); // Starts an SNMPGet instance to send requests
 // Blank callback pointer for each OID
-ValueCallback *callbackInOctets[numberOfPorts] = {0};  // These are the callback handlers for the various items we are gathering
-ValueCallback *callbackOutOctets[numberOfPorts] = {0};
-ValueCallback *callbackSysName;
-ValueCallback *callbackUptime;
+ValueCallback *callbackInOctets[numberOfPorts+1] = {0};  // These are the callback handlers for the various items we are gathering
+ValueCallback *callbackOutOctets[numberOfPorts+1] = {0};
+ValueCallback *callbackSysName = {0};
+ValueCallback *callbackUptime = {0};
 
 // Declare some empty functions? not sure why we do this... 
 
 // void createArrays();
-void snmpLoop(int Array[], int arrayCount, int arrayIndex);
-void getInSNMP(int Array[], int arrayCount);
-void getOutSNMP(int Array[], int arrayCount);
-void handleAllOutputs(int Array[], int arrayCount, int arrayIndex);
-void setTotals(int arrayIndex);
+void snmpLoop(const std::vector<int>& ports);
+void getInSNMP(const std::vector<int>& ports);
+void getOutSNMP(const std::vector<int>& ports);
+void handleAllOutputs(const std::vector<int>& ports);
+void setTotals();
+int findPortArrayIndex(int port);
 
 void printVariableHeader();
 void printVariableFooter();
 
-void SNMPsetup(int Array[], int arrayCount)
+void SNMPsetup(const std::vector<int>& ports)
 {
   snmp.setUDP(&udp); // give snmp a pointer to the UDP object
   snmp.begin();      // start the SNMP Manager
 
   // Get callbacks from creating a handler for each of the OID
-  for (int i = 0; i < arrayCount; ++i) {
-    int o = Array[i];
-    std::string oidInStr = ".1.3.6.1.2.1.2.2.1.10." + std::to_string(o); // create the list of inOids 
-    std::string oidOutStr = ".1.3.6.1.2.1.2.2.1.16." + std::to_string(o); // create the list of outOids
+  for (int port : ports) {
+    std::string oidInStr = ".1.3.6.1.2.1.2.2.1.10." + std::to_string(port); // create the list of inOids 
+    std::string oidOutStr = ".1.3.6.1.2.1.2.2.1.16." + std::to_string(port); // create the list of outOids
     // why is there a 1 in these? oidInOctets1?  Mr D
-    oidInOctets[o] = oidInStr.c_str();
-    oidOutOctets[o] = oidOutStr.c_str();
-    callbackInOctets[o]= snmp.addCounter32Handler(Switch, oidInOctets[o], &responseInOctets[o]); // create callbacks array for the OID
-    callbackOutOctets[o]= snmp.addCounter32Handler(Switch, oidOutOctets[o], &responseOutOctets[o]); // create callbacks array for the OID
+    oidInOctets[port] = oidInStr.c_str();
+    oidOutOctets[port] = oidOutStr.c_str();
+    callbackInOctets[port]= snmp.addCounter32Handler(Switch, oidInOctets[port], &responseInOctets[port]); // create callbacks array for the OID
+    callbackOutOctets[port]= snmp.addCounter32Handler(Switch, oidOutOctets[port], &responseOutOctets[port]); // create callbacks array for the OID
   }
   callbackSysName = snmp.addStringHandler(Switch, oidSysName, &sysNameResponse);
   callbackUptime = snmp.addTimestampHandler(Switch, oidUptime, &uptime);
@@ -116,30 +100,33 @@ void callLoop(){
   snmp.loop();
 }
 
-void snmpLoop(int Array[], int arrayCount, int arrayIndex){ // the port array, the amount of values in the array, and which array it is: 1st array would be 1, etc.
-  getInSNMP(Array, arrayCount);
-  getOutSNMP(Array, arrayCount);
-  handleAllOutputs(Array, arrayCount, arrayIndex);
-  setTotals(arrayIndex);
+void snmpLoop(const std::vector<int>& ports){ // the port array, the amount of values in the array, and which array it is: 1st array would be 1, etc.
+  getInSNMP(ports);
+  getOutSNMP(ports);
+  handleAllOutputs(ports);
+  setTotals();
 }
 
-void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
-  // Reset all Total variables so that the current data isn't mixing with the last poll.
-  tempArrTotals[arrayIndex-1][0] = 0;
-  tempArrTotals[arrayIndex-1][1] = 0;
+void handleAllOutputs(const std::vector<int>& ports){
+  // Reset temp Total variables so that the current data isn't mixing with the last poll.
+  for (int i = 0; i < NUM_CHANNELS; i++) {
+    tempArrTotals[i][0] = 0;
+    tempArrTotals[i][1] = 0;
+  }
 
-  // Prints and calculates the ports IN data:
-  for (int i = 0; i < arrayCount; i++) {
-    int o = Array[i]; // i counts from 0 to the maximum in our array - 1, so Array[i] gives us each number in the array we pass to the function.
+  // Prints and calculates the ports IN data: ---------------------------------------------
+  for (int port : ports) {
     int subT; // to store the difference between response and last response
 
-    subT = responseInOctets[o] - lastInOctets[o];
-    tempArrTotals[arrayIndex-1][0] += subT;
-    lastInOctets[o] = responseInOctets[o]; // set the last to the response, after this is where response can be redefined and it wont matter.
+    subT = responseInOctets[port] - lastInOctets[port];
+    if (subT < 0) {subT = 0;} else if (subT > 10000000) {subT = 10000000;}
+    int index = findPortArrayIndex(port);
+    tempArrTotals[index][0] += subT;
+    lastInOctets[port] = responseInOctets[port]; // set the last to the response, after this is where response can be redefined and it wont matter.
 
     if(SNMPDEBUG){
       Serial.println();
-      Serial.printf("Port %i IN: ", o);
+      Serial.printf("Port %i IN: ", port);
       Serial.print(subT);
     }
   }
@@ -147,18 +134,19 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
   // Just to get a line between IN and OUT
   if(SNMPDEBUG){Serial.println();}
 
-  // Prints and calculates the ports OUT data:
-  for (int i = 0; i < arrayCount; ++i) {
-    int o = Array[i];
+  // Prints and calculates the ports OUT data: -------------------------------------------------
+  for (int port : ports) {
     int subT;
 
-    subT = responseInOctets[o] - lastInOctets[o];
-    tempArrTotals[arrayIndex-1][0] += subT;
-    lastInOctets[o] = responseInOctets[o]; // set the last to the response, after this is where response can be redefined and it wont matter.
+    subT = responseOutOctets[port] - lastOutOctets[port];
+    if (subT < 0) {subT = 0;} else if (subT > 10000000) {subT = 10000000;}
+    int index = findPortArrayIndex(port);
+    tempArrTotals[index][1] += subT;
+    lastOutOctets[port] = responseOutOctets[port]; // set the last to the response, after this is where response can be redefined and it wont matter.
 
     if (SNMPDEBUG) {
       Serial.println();
-      Serial.printf("Port %i OUT: ", o);
+      Serial.printf("Port %i OUT: ", port);
       Serial.print(subT);
     }
   }
@@ -166,16 +154,17 @@ void handleAllOutputs(int Array[], int arrayCount, int arrayIndex){
   if(SNMPDEBUG){Serial.println();}
 }
 
-void setTotals(int arrayIndex){ // This is where we actually set the variables to pull from in our main.
-  arrTotals[arrayIndex-1][0] = tempArrTotals[arrayIndex-1][0];
-  arrTotals[arrayIndex-1][1] = tempArrTotals[arrayIndex-1][1];
+void setTotals(){ // This is where we actually set the variables to pull from in our main.
+  for (int i = 0; i < NUM_CHANNELS; i++) {
+    arrTotals[i][0] = tempArrTotals[i][0];
+    arrTotals[i][1] = tempArrTotals[i][1];
+  }
 }
 
-void getInSNMP(int Array[], int arrayCount) // This is a lot of stuff I don't understand, so just research snmp coding and you might understand.
+void getInSNMP(const std::vector<int>& ports) // This is a lot of stuff I don't understand, so just research snmp coding and you might understand.
 {
-  for (int i = 0; i < arrayCount; ++i) {
-  int o = Array[i];
-  snmpRequest.addOIDPointer(callbackInOctets[o]);
+  for (int port : ports) {
+    snmpRequest.addOIDPointer(callbackInOctets[port]);
   }
   snmpRequest.addOIDPointer(callbackSysName);
   snmpRequest.addOIDPointer(callbackUptime);
@@ -186,14 +175,11 @@ void getInSNMP(int Array[], int arrayCount) // This is a lot of stuff I don't un
   snmpRequest.clearOIDList();
 }
 
-void getOutSNMP(int Array[], int arrayCount) // Again I have no clue, this was part of the sample code in the library I used.
+void getOutSNMP(const std::vector<int>& ports) // Again I have no clue, this was part of the sample code in the library I used.
 {
-  for (int i = 0; i < arrayCount; ++i) {
-  int o = Array[i];
-  snmpRequest.addOIDPointer(callbackOutOctets[o]);
+  for (int port : ports) {
+    snmpRequest.addOIDPointer(callbackOutOctets[port]);
   }
-  snmpRequest.addOIDPointer(callbackSysName);
-  snmpRequest.addOIDPointer(callbackUptime);
   snmpRequest.setIP(WiFi.localIP()); // IP of the listening MCU
   snmpRequest.setUDP(&udp);
   snmpRequest.setRequestID(rand() % 5555);
@@ -234,4 +220,22 @@ void printVariableFooter()
     Serial.printf("Strip 4 Averaged, IN: %i  OUT: %i", arrTotals[3][0], arrTotals[3][1]);
     Serial.println();
   }
+}
+
+int findPortArrayIndex(int port) {
+    const int arrays[][2] = { {ARRAY_1}, {ARRAY_2}, {ARRAY_3}, {ARRAY_4} };
+    const int numArrays = sizeof(arrays) / sizeof(arrays[0]);
+
+    for (int i = 0; i < numArrays; ++i) {
+        const int* currentArray = arrays[i];
+        const int arraySize = 2; // Since each ARRAY_X has two elements
+        for (int j = 0; j < arraySize; ++j) {
+            if (port == currentArray[j]) {
+                return i;
+            }
+        }
+    }
+
+    // Port is not found in any array
+    return -1; // or any other indication of failure
 }

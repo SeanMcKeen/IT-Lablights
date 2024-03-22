@@ -4,40 +4,31 @@
 
 // Add the number of channels because if you have 4 channels you need 4 "gaps" or spaces that dont exist
 const int TotalLeds = NUM_LEDS + NUM_LEDS2 + NUM_LEDS3 + NUM_LEDS4 + NUM_CHANNELS;
-CRGB leds[TotalLeds];
+CRGB leds[TotalLeds] = {CRGB::Blue};
 
-int currentlyLitLedsForward[MAX_COMETS];
-int currentlyLitLedsReverse[MAX_COMETS];
+int currentlyLitLedsForward[MAX_COMETS] = {0};
+int currentlyLitLedsReverse[MAX_COMETS] = {0};
 
-CRGB forwardColors[MAX_COMETS];
-CRGB reverseColors[MAX_COMETS];
+CRGB forwardColors[MAX_COMETS] = {CRGB::Blue};
+CRGB reverseColors[MAX_COMETS] = {CRGB::Blue};
 
-#if NUM_CHANNELS == 2
-  bool Strip2 = true;
-  bool Strip3 = false;
-  bool Strip4 = false;
-#elif NUM_CHANNELS == 3
-  bool Strip2 = true;
-  bool Strip3 = true;
-  bool Strip4 = false;
-#elif NUM_CHANNELS == 4
-  bool Strip2 = true;
-  bool Strip3 = true;
-  bool Strip4 = true;
-#endif
+bool Strip2 = NUM_CHANNELS >= 2;
+bool Strip3 = NUM_CHANNELS >= 3;
+bool Strip4 = NUM_CHANNELS >= 4;
 
 // The "Splitpoints" as I like to call them, establish a location in leds[] that doesn't exist on our strips, that way we can use these gaps as the endings for each strip
 // EX: when the first strip comet hits LedSplit1 it will reset to the position of -1 (our reset point). Without these gaps the strip would show a lit LED randomly on the strip.
 
-int LedSplit1 = NUM_LEDS + 1;
-int LedSplit2 = LedSplit1 + NUM_LEDS2 + 1;
-int LedSplit3 = LedSplit2 + NUM_LEDS3 + 1;
+constexpr int LedSplit1 = NUM_LEDS + 1;
+constexpr int LedSplit2 = LedSplit1 + NUM_LEDS2 + 1;
+constexpr int LedSplit3 = LedSplit2 + NUM_LEDS3 + 1;
+
 
 // These start points are based off the splits, this way if you change your strip sizes it'll still work fine.
-int LedStart1 = 0;
-int LedStart2 = LedSplit1+1;
-int LedStart3 = LedSplit2+1;
-int LedStart4 = LedSplit3+1;
+constexpr int LedStart1 = 0;
+constexpr int LedStart2 = LedSplit1 + 1;
+constexpr int LedStart3 = LedSplit2 + 1;
+constexpr int LedStart4 = LedSplit3 + 1;
 
 // int specialSplitPoint = 15;
 
@@ -114,14 +105,14 @@ void pulseEvent(CRGB color, int strip, int direction) {
   
   for (int i = 0; i < MAX_COMETS; i++) {
     if (!reverse) {
-      ledPosition = (strip == 1) ? 0 : (strip == 2) ? LedSplit1 + 1 : (strip == 3) ? LedSplit2 + 1 : LedSplit3 + 1;
+      ledPosition = (strip == 0) ? 0 : (strip == 1) ? LedSplit1 + 1 : (strip == 2) ? LedSplit2 + 1 : LedSplit3 + 1;
       if (currentlyLitLedsForward[i] == -1) {
         currentlyLitLedsForward[i] = ledPosition;
         forwardColors[i] = color;
         break;
       }
     } else {
-      ledPosition = (strip == 1) ? LedSplit1 - 1 : (strip == 2) ? LedSplit2 - 1 : (strip == 3) ? LedSplit3 - 1 : TotalLeds - 1;
+      ledPosition = (strip == 0) ? LedSplit1 - 1 : (strip == 1) ? LedSplit2 - 1 : (strip == 2) ? LedSplit3 - 1 : TotalLeds - 1;
       if (currentlyLitLedsReverse[i] == -1) {
         currentlyLitLedsReverse[i] = ledPosition;
         reverseColors[i] = color;

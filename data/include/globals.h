@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <FastLED.h>
 #include <Wifi.h>
 #include "pinouts.h"
 
@@ -15,7 +14,7 @@
     #define SWITCH_IP       IPAddress(192,168,2,14) // IP address of the switch you're targeting
     #define NUM_PORTS       48 // Number of ports on the switch
     #define POLL_DELAY      10000 // 10 seconds
-    #define SNMPDEBUG       0
+    #define SNMPDEBUG       1
 
     #define BRIGHTNESS      100 // default is 64; MAX: 255
     #define NUM_CHANNELS    4 // number of strips being used (currently has no importance)
@@ -41,8 +40,8 @@
 
     #define LED_TYPE        WS2811 // Almost no clue what this means, the type of leds being used or something
 
-    #define ARRAY_1         {1,2} // an array of ports you want to be checked for snmp data
-    #define ARRAY_2         {42,43}
-    #define ARRAY_3         {17,19}
-    #define ARRAY_4         {7,8}
+    #define ARRAY_1         1,2 // an array of ports you want to be checked for snmp data
+    #define ARRAY_2         42,43
+    #define ARRAY_3         17,19
+    #define ARRAY_4         7,8
 #endif

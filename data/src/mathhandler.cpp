@@ -1,7 +1,7 @@
 #include "FastLED.h"
 #include <cstdlib>   // Include the <cstdlib> header for the rand() function
 
-int calcSNMPPulses(unsigned long Avg) {
+int calcSNMPPulses(int Avg) {
     if (Avg >= 1 && Avg <= 100000) {
         // Map Avg values in the range [1, 100000] to the range [1, 4]
         return round(1 + 3 * ((double)Avg / 100000)); // round(MIN Pulses + MAX Pulses - MIN Pulses * ((double)Avg / Max DATA Value)))
@@ -19,7 +19,7 @@ int calcSNMPPulses(unsigned long Avg) {
     return 1;
 }
 
-CRGB calcPulseColor(unsigned long Avg) { // This is to make a reactive color depending on the packet size, in a CGRB strip, like mine, Green is Red and Red is Green
+CRGB calcPulseColor(int Avg) { // This is to make a reactive color depending on the packet size, in a CGRB strip, like mine, Green is Red and Red is Green
     if (Avg < 35000) {
         return CRGB::Green;
     }else if (Avg < 80000) {
@@ -35,7 +35,7 @@ CRGB calcPulseColor(unsigned long Avg) { // This is to make a reactive color dep
     }
 }
 
-CRGB calcPulseColor2(unsigned long Avg) { // This is to have similar, but not exactly the same colors
+CRGB calcPulseColor2(int Avg) { // This is to have similar, but not exactly the same colors
     if (Avg < 35000) {
         return CRGB(5420608);
     }else if (Avg < 80000) {
