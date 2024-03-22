@@ -10,9 +10,8 @@ You will need to add your wifi SSID and password, as well as the IP address of y
 #include "WiFi.h" // ESP32 Core Wifi Library
 #include <WiFiUdp.h> // enables UDP protocol
 #include <Arduino_SNMP_Manager.h> 
-#include <snmpgrab.h>
-#include <globals.h>
-#include <mathhandler.h>
+#include "globals.h"
+#include "mathhandler.h"
 
 #if LABLIGHTS
 #include <lablights.h>

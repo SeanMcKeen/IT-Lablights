@@ -1,5 +1,5 @@
 #include <FastLED.h>
-#include <globals.h>
+#include "globals.h"
 #include <random>
 
 // Add the number of channels because if you have 4 channels you need 4 "gaps" or spaces that dont exist
