@@ -6,3 +6,4 @@ void snmpLoop(const std::vector<int>& ports);
 void printVariableHeader();
 void printVariableFooter();
 void callLoop();
+bool isConnectedToSwitch();

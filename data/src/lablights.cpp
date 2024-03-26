@@ -25,6 +25,7 @@ constexpr int LedSplit3 = LedSplit2 + NUM_LEDS3 + 1;
 
 
 // These start points are based off the splits, this way if you change your strip sizes it'll still work fine.
+
 constexpr int LedStart1 = 0;
 constexpr int LedStart2 = LedSplit1 + 1;
 constexpr int LedStart3 = LedSplit2 + 1;

@@ -10,7 +10,7 @@
 #include "snmpgrab.h"
 #include "lablights.h"
 #include "mathhandler.h"
-// #include "cloudserver.h"
+#include "cloudserver.h"
 #include <FastLED.h>
 #endif
 
@@ -46,7 +46,7 @@ void setup() {
     vectorInsert();
     SNMPsetup(arrays);
     initFastLED();
-    // webServSetup();
+    webServSetup();
   }
 }
 
@@ -54,43 +54,44 @@ void loop() {
   if (PROJECT_NAME == "Lablights") {
     litArray();
     callLoop();
-    // serverLoop(); // web server on http://esp32.local
+    serverLoop(); // web server on http://esp32.local
 
 
     if (millis() - prevBlink >= blinkDelay) {
-      // digitalWrite(PIN_BL, !digitalRead(PIN_BL));
+      digitalWrite(PIN_BL, !digitalRead(PIN_BL));
       prevBlink = millis();
     }
 
     if (millis() - pollStart >= pollInterval) {
       pollStart = millis();
       if (SNMPDEBUG) {printVariableHeader();}
-
-      if (!heap_caps_check_integrity(MALLOC_CAP_8BIT, true)) {
-        ESP_LOGE("thing","Heap integrity check failed!");
-      }
-
       snmpLoop(arrays);
-      snmpLoopFinished = true;
 
-      for (int i = 0; i < NUM_CHANNELS; ++i) {
-        int InAvg = arrTotals[i][0];
-        int OutAvg = arrTotals[i][1];
-        pulsesToSendReverse[i] = calcSNMPPulses(InAvg);
-        reverseColor[i] = calcPulseColor2(InAvg);
-        inPulseInterval[i] = pollTiming / pulsesToSendReverse[i] * 1000;
-        pulsesToSendForward[i] = calcSNMPPulses(OutAvg);
-        forwardColor[i] = calcPulseColor(OutAvg);
-        outPulseInterval[i] = pollTiming / pulsesToSendForward[i] * 1000;
-        pulsesSentForward[i] = 0;
-        pulsesSentReverse[i] = 0;
+      if (isConnectedToSwitch()) {
+        for (int i = 0; i < NUM_CHANNELS; ++i) {
+          int InAvg = arrTotals[i][0];
+          int OutAvg = arrTotals[i][1];
+          pulsesToSendReverse[i] = calcSNMPPulses(InAvg);
+          reverseColor[i] = calcPulseColor2(InAvg);
+          inPulseInterval[i] = pollTiming / pulsesToSendReverse[i] * 1000;
+          pulsesToSendForward[i] = calcSNMPPulses(OutAvg);
+          forwardColor[i] = calcPulseColor(OutAvg);
+          outPulseInterval[i] = pollTiming / pulsesToSendForward[i] * 1000;
+          pulsesSentForward[i] = 0;
+          pulsesSentReverse[i] = 0;
+        }
       }
       if (SNMPDEBUG) {printVariableFooter();}
+      snmpLoopFinished = true;
     }
     if (snmpLoopFinished) {
       for (int i = 0; i < NUM_CHANNELS; ++i) {
-        sendPulse(forwardColor[i], i, &pulsesSentForward[i], pulsesToSendForward[i], &previousPulseMillis[i*2], outPulseInterval[i], 0);
-        sendPulse(reverseColor[i], i, &pulsesSentReverse[i], pulsesToSendReverse[i], &previousPulseMillis[i*2+1], inPulseInterval[i], 1);
+        if (pulsesToSendForward[i] > 0) {
+          sendPulse(forwardColor[i], i, &pulsesSentForward[i], pulsesToSendForward[i], &previousPulseMillis[i*2], outPulseInterval[i], 0);
+        }
+        if (pulsesToSendReverse[i] > 0) {
+          sendPulse(reverseColor[i], i, &pulsesSentReverse[i], pulsesToSendReverse[i], &previousPulseMillis[i*2+1], inPulseInterval[i], 1);
+        }
       }
       snmpLoopFinished = false;
     }

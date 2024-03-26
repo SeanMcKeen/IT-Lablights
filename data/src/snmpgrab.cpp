@@ -42,7 +42,7 @@ unsigned int lastInOctets[numberOfPorts+1] = {0};      // from the last time it 
 const char* oidInOctets[numberOfPorts+1];  // We will need to populate this array with the OID strings for the ifInOctets (and out) for each of our ports
 const char* oidOutOctets[numberOfPorts+1]; // and we have to do that in setup
 
-char sysName[11]; // empty string thats big enough for 50 characters I guess
+char sysName[11]; // empty string thats big enough for 11 characters I guess
 char *sysNameResponse = sysName; // will be replaced once we get a response
 unsigned int uptime = 0; 
 unsigned int lastUptime = 0; 
@@ -69,6 +69,8 @@ void getOutSNMP(const std::vector<int>& ports);
 void handleAllOutputs(const std::vector<int>& ports);
 void setTotals();
 int findPortArrayIndex(int port);
+
+bool isConnectedToSwitch();
 
 void printVariableHeader();
 void printVariableFooter();
@@ -101,7 +103,6 @@ void snmpLoop(const std::vector<int>& ports){ // the port array, the amount of v
   getOutSNMP(ports);
   handleAllOutputs(ports);
   setTotals();
-  digitalWrite(PIN_BL, !digitalRead(PIN_BL));
 }
 
 void handleAllOutputs(const std::vector<int>& ports){
@@ -236,4 +237,10 @@ int findPortArrayIndex(int port) {
 
     // Port is not found in any array
     return -1; // or any other indication of failure
+}
+
+bool isConnectedToSwitch() {
+  if (uptime > 0) {
+    return true;
+  }else return false;
 }
