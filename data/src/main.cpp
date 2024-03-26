@@ -64,6 +64,7 @@ void loop() {
 
     if (millis() - pollStart >= pollInterval) {
       pollStart = millis();
+      snmpLoopFinished = false;
       if (SNMPDEBUG) {printVariableHeader();}
       snmpLoop(arrays);
 
@@ -93,7 +94,6 @@ void loop() {
           sendPulse(reverseColor[i], i, &pulsesSentReverse[i], pulsesToSendReverse[i], &previousPulseMillis[i*2+1], inPulseInterval[i], 1);
         }
       }
-      snmpLoopFinished = false;
     }
   }
 }
