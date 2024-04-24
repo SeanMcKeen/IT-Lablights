@@ -1,37 +1,16 @@
-#ifndef LABLIGHTS_H
-#define LABLIGHTS_H
-
-#include <vector>
 #include <FastLED.h>
-#include "globals.h"
+#include <globals.h>
 
-class Comet {
-public:
-  int length;
-  int speed;
-  CRGB color;
-  int position;
+extern CRGB leds[NUM_LEDS];
 
-  Comet(int length, int speed, CRGB color, int position) {
-    this->length = length;
-    this->speed = speed;
-    this->color = color;
-    this->position = position;
-  }
-};
+extern bool Strip1;
+extern bool Strip2;
+extern bool Strip3;
+extern bool Strip4;
 
-class CometManager {
-public:
-  std::vector<Comet> comets;
-
-  void addComet(Comet comet);
-  void removeComet(int index);
-  void updateComets();
-  void renderComets();
-};
-
-extern CometManager cometManager;
-
-void setupFastLed();
-
-#endif
+void initFastLED();
+void ledPulse(int pulseSize, CRGB pulseColor, int pulseSpeed);
+void litArray();
+void forwardEvent(CRGB fColor, int strip);
+void reverseEvent(CRGB rColor, int strip);
+void sendLightData(CRGB color, int pulses, int delayInterval, bool reverse);
