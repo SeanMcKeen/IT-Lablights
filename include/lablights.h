@@ -11,12 +11,13 @@ public:
   int speed;
   CRGB color;
   int position;
+  int strip;
 
-  Comet(int length, int speed, CRGB color, int position) {
+  Comet(int length, int speed, CRGB color, int strip) {
     this->length = length;
     this->speed = speed;
     this->color = color;
-    this->position = position;
+    this->strip = strip;
   }
 };
 
