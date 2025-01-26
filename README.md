@@ -3,8 +3,9 @@
 <head>
 </head>
 
-<h1 align="center">SNMP Lablights Project</h1>
+<h1 align="center">SNMP Lablights Project (Rewrite)</h1>
 <p>This Project is intended for my personal use and was made solely by me, others may use it for their own purposes if they find it useful.</p>
+<p>WARNING This project is unfinished and not currently functional</p>
 
 <h2>Overview</h2>
 This Project is an fully configurable LED project that uses SNMP data in order to display lights that show network traffic. 
